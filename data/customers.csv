@@ -1,0 +1,11 @@
+customerID,firstName,lastName,dateOfBirth,addressLine1,addressLine2,city,country,riskAppetite,accountBehaviour,investableAmount
+10001,Aoife,Byrne,1998-04-12,14 Oak Lane,,Galway,Ireland,High,Frequent Trader,15000
+10002,Liam,Murphy,1985-09-30,3 Rowan Court,Apt 5,Dublin,Ireland,Medium-High,Balanced,40000
+10003,Saoirse,Kelly,1992-01-18,27 Maple Drive,,Cork,Ireland,Medium,Regular Saver,25000
+10004,Conor,O'Brien,1970-11-05,88 Birch Road,,Limerick,Ireland,Low-Medium,Cautious Saver,60000
+10005,Niamh,Walsh,1958-06-22,5 Elm Terrace,,Waterford,Ireland,Low,Cautious Saver,120000
+10006,Sean,Doyle,2000-03-08,19 Cedar Way,Flat 2,Dublin,Ireland,Medium-High,Frequent Trader,8000
+10007,Emma,Ryan,1978-12-14,42 Willow Grove,,Galway,Ireland,Medium,Balanced,50000
+10008,Cian,McCarthy,1965-07-27,7 Hazel Close,,Kilkenny,Ireland,Low-Medium,Regular Saver,75000
+10009,Grace,Fitzgerald,1990-10-03,31 Chestnut Avenue,,Cork,Ireland,High,Balanced,20000
+10010,Darragh,Nolan,1983-02-19,63 Sycamore Street,Apt 11,Dublin,Ireland,Medium,Cautious Saver,35000

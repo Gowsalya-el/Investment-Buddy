@@ -1,0 +1,37 @@
+productID,productName,productType,productTerm,productRisk,riskScore,expectedReturnPercentage
+20001,Savings Bond,State Savings,,Low,1,2
+20002,Prize Bond,State Savings,,Low,1,1.5
+20003,Savings Certificate,State Savings,,Low,1,2.2
+20004,2 Year Fixed Deposit Account,Savings Account,2 Years,Low,2,2.8
+20005,5 Year Fixed Deposit Account,Savings Account,5 Years,Low,2,3.5
+20006,Treasury Bill Fund,Money Market Fund,,Low,2,2.5
+20007,12 Month Fixed Term Deposit,Fixed Deposit,1 Year,Low-Medium,3,3.5
+20008,36 Month Fixed Term Deposit,Fixed Deposit,3 Years,Low-Medium,3,4
+20009,Short Duration Government Bond Fund,Bond Fund,,Low-Medium,4,4.5
+20010,Corporate Income Bond Fund,Bond Fund,,Low-Medium,4,5
+20011,Conservative Multi Asset Fund,Managed Investment Fund,,Low-Medium,4,5.5
+20012,Capital Secure Growth Policy,Insurance Investment,10 Years,Low-Medium,3,4
+20013,Balanced Index Fund,Balanced Fund,,Medium,5,6
+20014,Diversified Growth Fund,Balanced Fund,,Medium,5,6.5
+20015,Investment Grade Corporate Bond Fund,Bond Fund,,Medium,5,5.5
+20016,Global Dividend Equity Fund,Equity Fund,,Medium,6,7
+20017,Healthcare Dividend Portfolio,Stocks & Shares,,Medium,6,7.5
+20018,Balanced PRSA,Retirement Account,,Medium,5,6.5
+20019,Managed Pension Growth Fund,Pension Fund,,Medium,6,7
+20020,S&P 500 ETF,ETF,,Medium-High,7,8
+20021,MSCI World ETF,ETF,,Medium-High,7,8.5
+20022,Global Equity Index Fund,Index Fund,,Medium-High,7,8
+20023,European Property REIT,Real Estate Investment Trust,,Medium-High,7,7.5
+20024,Commercial Property Income Fund,Property Fund,,Medium-High,7,8
+20025,Global Technology Leaders Fund,Sector Fund,,Medium-High,8,9.5
+20026,Financial Services Leaders Fund,Sector Fund,,Medium-High,7,8.5
+20027,Bitcoin,Cryptocurrency,,High,10,15
+20028,Ethereum,Cryptocurrency,,High,10,14
+20029,AI Innovation ETF,Thematic ETF,,High,9,12
+20030,Biotechnology Discovery ETF,Thematic ETF,,High,9,11.5
+20031,Clean Energy Transition ETF,Thematic ETF,,High,9,11
+20032,Emerging Markets Opportunities ETF,Emerging Markets ETF,,High,8,10
+20033,NovaTech Growth plc,Individual Stock,,High,10,18
+20034,FutureAI Systems Ltd,Individual Stock,,High,10,20
+20035,Startup Equity Crowdfunding Portfolio,Crowdfunding,,High,10,22
+20036,Small Business P2P Lending Fund,P2P Lending,,High,9,12

@@ -3,1586 +3,629 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>💰 Investment Buddy — Smart Investing for Every Generation</title>
+<title>💰 Investment Buddy — Per-Customer Portfolio Advisor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <style>
-/* ── Reset & Base ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; color: #0f172a; -webkit-font-smoothing: antialiased; }
-button { cursor: pointer; border: none; background: none; font-family: inherit; }
-input, select { font-family: inherit; }
-
-/* ── Colours ── */
-:root {
-  --brand-50:  #eef2ff;
-  --brand-100: #e0e7ff;
-  --brand-200: #c7d2fe;
-  --brand-300: #a5b4fc;
-  --brand-400: #818cf8;
-  --brand-500: #6366f1;
-  --brand-600: #4f46e5;
-  --brand-700: #4338ca;
-  --brand-800: #3730a3;
-  --brand-900: #312e81;
-  --gold:      #f59e0b;
-  --green-500: #22c55e;
-  --red-500:   #ef4444;
-  --orange-500:#f97316;
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,sans-serif;background:#f1f5f9;color:#0f172a;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,select{font-family:inherit}
+:root{
+  --brand-50:#eef2ff;--brand-100:#e0e7ff;--brand-200:#c7d2fe;--brand-300:#a5b4fc;
+  --brand-400:#818cf8;--brand-500:#6366f1;--brand-600:#4f46e5;--brand-700:#4338ca;
+  --brand-800:#3730a3;--brand-900:#312e81;
 }
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.anim-fade{animation:fadeIn .4s ease forwards}
+.anim-slide{animation:slideUp .4s ease forwards}
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-track{background:#e2e8f0}
+::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:4px}
 
-/* ── Animations ── */
-@keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
-@keyframes slideUp { from { opacity:0; transform:translateY(24px) } to { opacity:1; transform:translateY(0) } }
-@keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
-.anim-fade  { animation: fadeIn  .5s ease forwards }
-.anim-slide { animation: slideUp .4s ease forwards }
-.pulse-dot  { animation: pulse   2s ease infinite }
+/* Layout */
+.app-header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#312e81,#4f46e5);color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.app-header-inner{max-width:1100px;margin:0 auto;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.container{max-width:1100px;margin:0 auto;padding:1.5rem}
+.grid-main{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start}
+@media(max-width:860px){.grid-main{grid-template-columns:1fr}}
 
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width:6px }
-::-webkit-scrollbar-track { background:#f1f5f9 }
-::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px }
+/* Cards */
+.card{background:#fff;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card+.card{margin-top:1.25rem}
+.card-title{font-size:1.05rem;font-weight:800;color:#1e293b;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem}
+.card-sub{font-size:.85rem;color:#64748b;margin-bottom:1.25rem;line-height:1.5}
 
-/* ── Utilities ── */
-.sr-only { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0) }
+/* Inputs */
+.field-label{display:block;font-size:.8rem;font-weight:700;color:#475569;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.03em}
+.select-field,.input-field{width:100%;border:1.5px solid #cbd5e1;border-radius:.6rem;padding:.7rem .9rem;font-size:.95rem;color:#0f172a;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+.select-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2.4rem;cursor:pointer}
+.select-field:focus,.input-field:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
 
-/* ── Layout ── */
-.max-w-4xl { max-width:56rem; margin-inline:auto }
-.max-w-3xl { max-width:48rem; margin-inline:auto }
-.max-w-6xl { max-width:72rem; margin-inline:auto }
-.px-4  { padding-inline:1rem }
-.px-6  { padding-inline:1.5rem }
-.py-4  { padding-block:.75rem 1rem }
-.py-6  { padding-block:1.5rem }
-.py-8  { padding-block:2rem }
-.pt-16 { padding-top:4rem }
-.pb-20 { padding-bottom:5rem }
-.pb-16 { padding-bottom:4rem }
+/* Profile panel */
+.profile-row{display:flex;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid #f1f5f9;font-size:.9rem}
+.profile-row:last-child{border-bottom:none}
+.profile-key{color:#64748b;font-weight:500}
+.profile-val{color:#1e293b;font-weight:700;text-align:right}
+.badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:800;padding:.25rem .7rem;border-radius:999px}
+.badge-low{background:#dcfce7;color:#15803d}
+.badge-lowmed{background:#d1fae5;color:#047857}
+.badge-med{background:#fef9c3;color:#a16207}
+.badge-medhigh{background:#ffedd5;color:#c2410c}
+.badge-high{background:#fee2e2;color:#b91c1c}
 
-/* ── Card ── */
-.card {
-  background:#fff;
-  border-radius:1.25rem;
-  border:1px solid #e2e8f0;
-  padding:1.5rem;
-  box-shadow:0 1px 3px rgba(0,0,0,.06);
-}
+/* Allocation legend */
+.alloc-item{display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid #f1f5f9}
+.alloc-item:last-child{border-bottom:none}
+.alloc-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0}
+.alloc-name{flex:1;font-size:.9rem;font-weight:600;color:#334155}
+.alloc-pct{font-size:1rem;font-weight:800}
+.alloc-amt{font-size:.8rem;color:#64748b;min-width:90px;text-align:right}
 
-/* ── Buttons ── */
-.btn-primary {
-  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
-  background:linear-gradient(135deg,var(--brand-600),#4f46e5);
-  color:#fff; font-weight:700; font-size:1rem;
-  padding:.85rem 1.75rem; border-radius:.875rem;
-  box-shadow:0 4px 14px rgba(79,70,229,.35);
-  transition:all .2s ease; width:100%;
-}
-.btn-primary:hover  { transform:translateY(-1px); box-shadow:0 6px 20px rgba(79,70,229,.45) }
-.btn-primary:active { transform:translateY(0) }
-.btn-primary:disabled { opacity:.5; cursor:not-allowed; transform:none }
-.btn-secondary {
-  display:inline-flex; align-items:center; justify-content:center; gap:.5rem;
-  background:#fff; color:#374151; font-weight:600;
-  padding:.75rem 1.5rem; border-radius:.875rem;
-  border:1.5px solid #e2e8f0;
-  box-shadow:0 1px 3px rgba(0,0,0,.06);
-  transition:all .2s ease;
-}
-.btn-secondary:hover { border-color:var(--brand-400); color:var(--brand-600); background:var(--brand-50) }
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:.85rem}
+.tbl th{text-align:left;padding:.6rem .5rem;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+.tbl td{padding:.6rem .5rem;border-bottom:1px solid #f1f5f9;color:#334155}
+.tbl tr:hover td{background:#f8fafc}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl .total-row td{font-weight:800;color:#1e293b;border-top:2px solid #cbd5e1;background:#f8fafc}
+.tbl-scroll{overflow-x:auto}
 
-/* ── Option Cards ── */
-.opt-card {
-  border:2px solid #e2e8f0; border-radius:.875rem;
-  padding:.875rem; cursor:pointer;
-  transition:all .18s ease; text-align:left;
-  background:#fff;
-}
-.opt-card:hover  { border-color:var(--brand-400); background:var(--brand-50) }
-.opt-card.active { border-color:var(--brand-500); background:var(--brand-50); box-shadow:0 0 0 3px rgba(99,102,241,.15) }
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;padding:.7rem 1.3rem;border-radius:.7rem;font-size:.9rem;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--brand-600),#4f46e5);color:#fff;box-shadow:0 3px 10px rgba(79,70,229,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(79,70,229,.45)}
+.btn-ghost{background:#fff;border:1.5px solid #cbd5e1;color:#475569}
+.btn-ghost:hover{border-color:var(--brand-400);color:var(--brand-600);background:var(--brand-50)}
 
-/* ── Inputs ── */
-.input-field, .select-field {
-  width:100%; border:1.5px solid #e2e8f0; border-radius:.75rem;
-  padding:.75rem 1rem; font-size:.9375rem; color:#0f172a;
-  background:#fff; outline:none;
-  transition:border-color .15s ease, box-shadow .15s ease;
-}
-.input-field:focus, .select-field:focus {
-  border-color:var(--brand-500);
-  box-shadow:0 0 0 3px rgba(99,102,241,.15);
-}
-.select-field { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right .875rem center; padding-right:2.5rem; cursor:pointer }
+/* Explain callouts */
+.explain{background:linear-gradient(135deg,#eff6ff,#eef2ff);border:1px solid #c7d2fe;border-radius:.8rem;padding:1.1rem 1.25rem}
+.explain h4{font-size:.95rem;font-weight:800;color:var(--brand-800);margin-bottom:.5rem;display:flex;align-items:center;gap:.45rem}
+.explain p{font-size:.88rem;color:#334155;line-height:1.65}
+.explain+.explain{margin-top:1rem}
 
-/* ── Form labels ── */
-.form-label { display:block; font-size:.875rem; font-weight:600; color:#374151; margin-bottom:.4rem }
-.form-hint  { font-size:.75rem; color:#9ca3af; margin-top:.25rem }
-.form-error { font-size:.75rem; color:#ef4444; margin-top:.3rem }
+/* Stat chips */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.9rem}
+.stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:.8rem;padding:1rem;text-align:center}
+.stat-val{font-size:1.5rem;font-weight:900;color:var(--brand-700)}
+.stat-lbl{font-size:.75rem;color:#64748b;margin-top:.2rem;font-weight:600}
 
-/* ── Progress bar ── */
-.progress-track { height:.5rem; background:#e2e8f0; border-radius:9999px; overflow:hidden }
-.progress-fill  { height:100%; background:linear-gradient(90deg,var(--brand-500),#818cf8); border-radius:9999px; transition:width .6s cubic-bezier(.4,0,.2,1) }
+/* Notice */
+.notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:.7rem;padding:.7rem 1rem;font-size:.8rem;line-height:1.5}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#15803d;color:#fff;padding:.8rem 1.5rem;border-radius:.7rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:100;animation:fadeIn .3s}
 
-/* ── Risk badge ── */
-.risk-badge { display:inline-flex; align-items:center; gap:.25rem; font-size:.7rem; font-weight:700; padding:.2rem .55rem; border-radius:9999px }
-.risk-none   { background:#f3f4f6; color:#374151 }
-.risk-low    { background:#dcfce7; color:#16a34a }
-.risk-medium { background:#fef9c3; color:#a16207 }
-.risk-high   { background:#fee2e2; color:#b91c1c }
-
-/* ── Gauge SVG ── */
-.gauge-wrap { display:flex; flex-direction:column; align-items:center }
-
-/* ── Tab Bar ── */
-.tab-bar { display:flex; background:#fff; border-radius:1rem; border:1px solid #e2e8f0; padding:.25rem; gap:.25rem; box-shadow:0 1px 3px rgba(0,0,0,.06) }
-.tab-btn { flex:1; padding:.625rem .5rem; border-radius:.75rem; font-size:.875rem; font-weight:600; color:#6b7280; transition:all .2s ease }
-.tab-btn:hover  { color:var(--brand-600); background:var(--brand-50) }
-.tab-btn.active { background:var(--brand-600); color:#fff; box-shadow:0 2px 8px rgba(79,70,229,.4) }
-
-/* ── Pie chart ── */
-.pie-wrap  { position:relative; width:240px; height:240px; flex-shrink:0 }
-.pie-chart { transform: rotate(-90deg) }
-.pie-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center }
-
-/* ── Bar chart ── */
-.bar-chart-wrap { display:flex; align-items:flex-end; gap:1rem; height:200px; padding:.5rem 0 }
-.bar-col { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:.4rem }
-.bar { border-radius:.5rem .5rem 0 0; width:100%; transition:height .6s ease; min-width:32px }
-.bar-label { font-size:.7rem; font-weight:600; color:#6b7280; text-align:center; white-space:nowrap }
-.bar-value { font-size:.75rem; font-weight:700; color:#374151; text-align:center }
-
-/* ── Area chart ── */
-.area-chart-svg { width:100%; overflow:visible }
-
-/* ── Warning banner ── */
-.banner-warn { background:#fffbeb; border:1px solid #fde68a; color:#92400e; border-radius:.75rem; padding:.75rem 1rem; font-size:.875rem; font-weight:500 }
-.banner-info { background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; border-radius:.75rem; padding:.75rem 1rem; font-size:.875rem; font-weight:500 }
-.banner-tip  { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; border-radius:.75rem; padding:.75rem 1rem; font-size:.875rem; font-weight:500 }
-
-/* ── Grid helpers ── */
-.grid-2  { display:grid; grid-template-columns:repeat(2,1fr);   gap:1rem }
-.grid-3  { display:grid; grid-template-columns:repeat(3,1fr);   gap:.75rem }
-.grid-4  { display:grid; grid-template-columns:repeat(4,1fr);   gap:.75rem }
-.grid-auto { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:.75rem }
-
-@media(max-width:640px) {
-  .grid-3 { grid-template-columns:repeat(2,1fr) }
-  .grid-4 { grid-template-columns:repeat(2,1fr) }
-  .grid-auto { grid-template-columns:repeat(2,1fr) }
-  .hide-sm { display:none }
-}
-
-/* ── Misc helpers ── */
-.flex { display:flex }
-.flex-col { flex-direction:column }
-.items-center { align-items:center }
-.items-start  { align-items:flex-start }
-.justify-between { justify-content:space-between }
-.gap-2 { gap:.5rem }
-.gap-3 { gap:.75rem }
-.gap-4 { gap:1rem }
-.gap-6 { gap:1.5rem }
-.space-y-4 > * + * { margin-top:1rem }
-.space-y-5 > * + * { margin-top:1.25rem }
-.space-y-6 > * + * { margin-top:1.5rem }
-.mt-1 { margin-top:.25rem }
-.mt-2 { margin-top:.5rem }
-.mt-3 { margin-top:.75rem }
-.mt-4 { margin-top:1rem }
-.mt-6 { margin-top:1.5rem }
-.mt-8 { margin-top:2rem }
-.mb-1 { margin-bottom:.25rem }
-.mb-2 { margin-bottom:.5rem }
-.mb-4 { margin-bottom:1rem }
-.mb-6 { margin-bottom:1.5rem }
-.mb-8 { margin-bottom:2rem }
-.ml-auto { margin-left:auto }
-.text-center { text-align:center }
-.text-right  { text-align:right }
-.text-xs  { font-size:.75rem }
-.text-sm  { font-size:.875rem }
-.text-base{ font-size:1rem }
-.text-lg  { font-size:1.125rem }
-.text-xl  { font-size:1.25rem }
-.text-2xl { font-size:1.5rem }
-.text-3xl { font-size:1.875rem }
-.text-4xl { font-size:2.25rem }
-.font-medium  { font-weight:500 }
-.font-semibold{ font-weight:600 }
-.font-bold    { font-weight:700 }
-.font-extrabold{font-weight:800 }
-.font-black   { font-weight:900 }
-.leading-tight  { line-height:1.25 }
-.leading-relaxed{ line-height:1.625 }
-.tracking-widest{ letter-spacing:.1em }
-.uppercase { text-transform:uppercase }
-.truncate  { overflow:hidden; text-overflow:ellipsis; white-space:nowrap }
-.rounded-full { border-radius:9999px }
-.rounded-xl   { border-radius:.75rem }
-.rounded-2xl  { border-radius:1rem }
-.w-full  { width:100% }
-.h-full  { height:100% }
-.min-h-screen { min-height:100vh }
-.overflow-hidden { overflow:hidden }
-.relative { position:relative }
-.absolute { position:absolute }
-.sticky { position:sticky }
-.top-0  { top:0 }
-.z-40   { z-index:40 }
-.border-b { border-bottom:1px solid #e2e8f0 }
-.shadow-sm { box-shadow:0 1px 3px rgba(0,0,0,.06) }
-.shadow-md { box-shadow:0 4px 12px rgba(0,0,0,.1) }
-.shadow-xl { box-shadow:0 10px 40px rgba(0,0,0,.15) }
-.backdrop-blur { backdrop-filter:blur(12px) }
-
-/* ── Colors text ── */
-.text-white { color:#fff }
-.text-gray-400 { color:#9ca3af }
-.text-gray-500 { color:#6b7280 }
-.text-gray-600 { color:#4b5563 }
-.text-gray-700 { color:#374151 }
-.text-gray-800 { color:#1f2937 }
-.text-brand-200 { color:#c7d2fe }
-.text-brand-300 { color:#a5b4fc }
-.text-brand-500 { color:var(--brand-500) }
-.text-brand-600 { color:var(--brand-600) }
-.text-brand-700 { color:var(--brand-700) }
-.text-brand-800 { color:var(--brand-800) }
-.text-green-600 { color:#16a34a }
-.text-red-500   { color:#ef4444 }
-.text-orange-600{ color:#ea580c }
-
-/* ── Background ── */
-.bg-white      { background:#fff }
-.bg-gray-50    { background:#f8fafc }
-.bg-brand-50   { background:var(--brand-50) }
-.bg-indigo-50  { background:#eef2ff }
-.bg-green-50   { background:#f0fdf4 }
-.bg-amber-50   { background:#fffbeb }
-.bg-sky-50     { background:#f0f9ff }
-
-/* ── Landing specific ── */
-.hero-bg {
-  min-height:100vh;
-  background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#312e81 100%);
-  color:#fff;
-}
-.hero-nav { display:flex; align-items:center; justify-content:space-between; padding:1.25rem 1.5rem; max-width:72rem; margin:0 auto }
-.hero-badge { font-size:.75rem; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); padding:.35rem .875rem; border-radius:9999px; color:#c7d2fe }
-.hero-title { font-size:clamp(2.5rem,6vw,4rem); font-weight:900; line-height:1.1; margin-bottom:1.25rem }
-.hero-grad  { background:linear-gradient(90deg,#a5b4fc,#fbbf24); -webkit-background-clip:text; -webkit-text-fill-color:transparent }
-.hero-sub   { font-size:1.2rem; color:#c7d2fe; max-width:36rem; margin:0 auto 2.5rem; line-height:1.7 }
-.hero-cta   {
-  display:inline-flex; align-items:center; gap:.75rem;
-  background:linear-gradient(135deg,var(--brand-500),#818cf8);
-  color:#fff; font-weight:800; font-size:1.1rem;
-  padding:1rem 2.5rem; border-radius:1.25rem;
-  box-shadow:0 8px 30px rgba(79,70,229,.5);
-  transition:all .25s ease;
-}
-.hero-cta:hover { transform:translateY(-2px); box-shadow:0 12px 40px rgba(79,70,229,.6) }
-.gen-card { background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); border-radius:.875rem; padding:.875rem .75rem; text-align:center; transition:background .2s }
-.gen-card:hover { background:rgba(255,255,255,.14) }
-.feat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1.5rem }
-.feat-item { text-align:center; padding:1.5rem 1rem }
-.feat-item:hover .feat-icon { transform:scale(1.12) }
-.feat-icon { font-size:2.5rem; display:block; margin-bottom:.75rem; transition:transform .2s }
-
-/* ── Step header ── */
-.step-header { text-align:center; margin-bottom:2rem }
-.step-icon   { font-size:3.5rem; display:block; margin-bottom:.75rem }
-.step-title  { font-size:1.75rem; font-weight:800; color:#0f172a; margin-bottom:.35rem }
-.step-desc   { color:#6b7280; font-size:.9375rem }
-
-/* ── Sticky header ── */
-.app-header {
-  position:sticky; top:0; z-index:40;
-  background:rgba(255,255,255,.85); backdrop-filter:blur(12px);
-  border-bottom:1px solid #e2e8f0; box-shadow:0 1px 4px rgba(0,0,0,.05);
-}
-.app-header-inner { max-width:48rem; margin:0 auto; padding:.875rem 1rem; display:flex; align-items:center; justify-content:space-between }
-
-/* ── Results hero ── */
-.result-hero {
-  background:linear-gradient(135deg,#312e81,#4f46e5,#4338ca);
-  border-radius:1.5rem; padding:2rem; color:#fff;
-  box-shadow:0 8px 32px rgba(79,70,229,.35);
-}
-
-/* ── Allocation legend row ── */
-.alloc-row { display:flex; align-items:center; gap:.75rem; padding:.65rem .75rem; border-radius:.75rem; transition:background .15s }
-.alloc-row:hover { background:#f8fafc }
-.alloc-dot { width:.625rem; height:.625rem; border-radius:9999px; flex-shrink:0 }
-.alloc-bar { height:.35rem; border-radius:9999px; transition:width .6s ease }
-
-/* ── Tooltip ── */
-.tt { position:absolute; background:#fff; border:1px solid #e2e8f0; border-radius:.75rem; padding:.625rem .875rem; font-size:.8rem; box-shadow:0 4px 16px rgba(0,0,0,.12); pointer-events:none; z-index:99; white-space:nowrap }
-
-/* ── Quiz dot nav ── */
-.quiz-dots { display:flex; gap:.375rem; justify-content:center; margin-top:.5rem }
-.quiz-dot  { width:.625rem; height:.625rem; border-radius:9999px; border:none; cursor:pointer; transition:all .2s }
-
-/* ── Next-step list ── */
-.step-list { list-style:none; space-y:3 }
-.step-list li { display:flex; align-items:flex-start; gap:.75rem; font-size:.9rem; color:#374151; padding:.5rem 0; border-bottom:1px solid #f1f5f9 }
-.step-list li:last-child { border-bottom:none }
-.step-num { width:1.5rem; height:1.5rem; border-radius:9999px; background:var(--brand-100); color:var(--brand-700); font-size:.7rem; font-weight:800; display:flex; align-items:center; justify-content:center; flex-shrink:0 }
+/* Helpers */
+.muted{color:#64748b}
+.mt-1{margin-top:.5rem}.mt-2{margin-top:1rem}.mt-3{margin-top:1.5rem}
+.flex{display:flex}.between{justify-content:space-between}.center{align-items:center}
+.gap-2{gap:.5rem}.gap-3{gap:.75rem}.wrap{flex-wrap:wrap}
+.hidden{display:none}
+.disclaimer{font-size:.72rem;color:#94a3b8;text-align:center;padding:2rem 1rem;line-height:1.6}
 </style>
 </head>
 <body>
 
-<div id="app"></div>
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="flex center gap-2">
+      <span style="font-size:1.6rem">💰</span>
+      <div>
+        <div style="font-weight:900;font-size:1.15rem;line-height:1.1">Investment Buddy</div>
+        <div style="font-size:.72rem;opacity:.8">Per-customer portfolio advisor</div>
+      </div>
+    </div>
+    <div style="min-width:240px">
+      <label class="field-label" style="color:#c7d2fe;margin-bottom:.3rem">Select customer</label>
+      <select id="customer-select" class="select-field" style="min-width:240px"></select>
+    </div>
+  </div>
+</header>
 
-<!-- React 18 UMD (loaded via local fallback approach) -->
+<div class="container">
+  <div id="load-status" class="notice mt-1 hidden"></div>
+  <div id="app-body" class="grid-main"></div>
+</div>
+
+<div class="disclaimer">
+  ⚠️ Investment Buddy is an educational decision-support tool. All figures are projections based
+  solely on the expected returns recorded in the supplied product dataset — they are not guarantees.
+  Actual returns vary. This is not regulated financial advice; customers should consult a qualified
+  adviser before investing.
+</div>
+
 <script>
-// ═══════════════════════════════════════════════════════════════════
-//  INVESTMENT BUDDY — Complete Single-File Application
-//  Vanilla JS + CSS only (no build step, no npm needed)
-// ═══════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════
+//  INVESTMENT BUDDY — Data-driven per-customer portfolio advisor
+//  All calculations use ONLY the supplied datasets (products + customers).
+// ═══════════════════════════════════════════════════════════════════════════
 
-// ─── Investment Engine ────────────────────────────────────────────
-const Engine = (() => {
+// ── Embedded dataset fallback (used when fetch() is blocked, e.g. file://) ──
+// These mirror data/products.csv and data/customers.csv exactly.
+const EMBEDDED_PRODUCTS_CSV = `productID,productName,productType,productTerm,productRisk,riskScore,expectedReturnPercentage
+20001,Savings Bond,State Savings,,Low,1,2
+20002,Prize Bond,State Savings,,Low,1,1.5
+20003,Savings Certificate,State Savings,,Low,1,2.2
+20004,2 Year Fixed Deposit Account,Savings Account,2 Years,Low,2,2.8
+20005,5 Year Fixed Deposit Account,Savings Account,5 Years,Low,2,3.5
+20006,Treasury Bill Fund,Money Market Fund,,Low,2,2.5
+20007,12 Month Fixed Term Deposit,Fixed Deposit,1 Year,Low-Medium,3,3.5
+20008,36 Month Fixed Term Deposit,Fixed Deposit,3 Years,Low-Medium,3,4
+20009,Short Duration Government Bond Fund,Bond Fund,,Low-Medium,4,4.5
+20010,Corporate Income Bond Fund,Bond Fund,,Low-Medium,4,5
+20011,Conservative Multi Asset Fund,Managed Investment Fund,,Low-Medium,4,5.5
+20012,Capital Secure Growth Policy,Insurance Investment,10 Years,Low-Medium,3,4
+20013,Balanced Index Fund,Balanced Fund,,Medium,5,6
+20014,Diversified Growth Fund,Balanced Fund,,Medium,5,6.5
+20015,Investment Grade Corporate Bond Fund,Bond Fund,,Medium,5,5.5
+20016,Global Dividend Equity Fund,Equity Fund,,Medium,6,7
+20017,Healthcare Dividend Portfolio,Stocks & Shares,,Medium,6,7.5
+20018,Balanced PRSA,Retirement Account,,Medium,5,6.5
+20019,Managed Pension Growth Fund,Pension Fund,,Medium,6,7
+20020,S&P 500 ETF,ETF,,Medium-High,7,8
+20021,MSCI World ETF,ETF,,Medium-High,7,8.5
+20022,Global Equity Index Fund,Index Fund,,Medium-High,7,8
+20023,European Property REIT,Real Estate Investment Trust,,Medium-High,7,7.5
+20024,Commercial Property Income Fund,Property Fund,,Medium-High,7,8
+20025,Global Technology Leaders Fund,Sector Fund,,Medium-High,8,9.5
+20026,Financial Services Leaders Fund,Sector Fund,,Medium-High,7,8.5
+20027,Bitcoin,Cryptocurrency,,High,10,15
+20028,Ethereum,Cryptocurrency,,High,10,14
+20029,AI Innovation ETF,Thematic ETF,,High,9,12
+20030,Biotechnology Discovery ETF,Thematic ETF,,High,9,11.5
+20031,Clean Energy Transition ETF,Thematic ETF,,High,9,11
+20032,Emerging Markets Opportunities ETF,Emerging Markets ETF,,High,8,10
+20033,NovaTech Growth plc,Individual Stock,,High,10,18
+20034,FutureAI Systems Ltd,Individual Stock,,High,10,20
+20035,Startup Equity Crowdfunding Portfolio,Crowdfunding,,High,10,22
+20036,Small Business P2P Lending Fund,P2P Lending,,High,9,12`;
 
-  function detectGeneration(birthYear) {
-    if (birthYear >= 2013) return { label:'Gen Alpha',        emoji:'🌟', color:'purple' }
-    if (birthYear >= 1997) return { label:'Gen Z',            emoji:'⚡', color:'blue'   }
-    if (birthYear >= 1981) return { label:'Millennial',       emoji:'💻', color:'indigo' }
-    if (birthYear >= 1965) return { label:'Gen X',            emoji:'🎸', color:'orange' }
-    if (birthYear >= 1946) return { label:'Baby Boomer',      emoji:'🕊️', color:'green'  }
-    return                        { label:'Silent Generation', emoji:'📚', color:'gray'   }
-  }
+const EMBEDDED_CUSTOMERS_CSV = `customerID,firstName,lastName,dateOfBirth,addressLine1,addressLine2,city,country,riskAppetite,accountBehaviour,investableAmount
+10001,Aoife,Byrne,1998-04-12,14 Oak Lane,,Galway,Ireland,High,Frequent Trader,15000
+10002,Liam,Murphy,1985-09-30,3 Rowan Court,Apt 5,Dublin,Ireland,Medium-High,Balanced,40000
+10003,Saoirse,Kelly,1992-01-18,27 Maple Drive,,Cork,Ireland,Medium,Regular Saver,25000
+10004,Conor,O'Brien,1970-11-05,88 Birch Road,,Limerick,Ireland,Low-Medium,Cautious Saver,60000
+10005,Niamh,Walsh,1958-06-22,5 Elm Terrace,,Waterford,Ireland,Low,Cautious Saver,120000
+10006,Sean,Doyle,2000-03-08,19 Cedar Way,Flat 2,Dublin,Ireland,Medium-High,Frequent Trader,8000
+10007,Emma,Ryan,1978-12-14,42 Willow Grove,,Galway,Ireland,Medium,Balanced,50000
+10008,Cian,McCarthy,1965-07-27,7 Hazel Close,,Kilkenny,Ireland,Low-Medium,Regular Saver,75000
+10009,Grace,Fitzgerald,1990-10-03,31 Chestnut Avenue,,Cork,Ireland,High,Balanced,20000
+10010,Darragh,Nolan,1983-02-19,63 Sycamore Street,Apt 11,Dublin,Ireland,Medium,Cautious Saver,35000`;
 
-  function getRiskInfo(score) {
-    if (score >= 75) return { level:'Aggressive',      label:'High Growth',           icon:'🚀', gaugeColor:'#ef4444' }
-    if (score >= 50) return { level:'Moderate',        label:'Balanced Growth',       icon:'⚖️', gaugeColor:'#f97316' }
-    if (score >= 25) return { level:'Conservative',    label:'Steady & Safe',         icon:'🛡️', gaugeColor:'#3b82f6' }
-    return                  { level:'Very Conservative',label:'Capital Preservation',  icon:'🏦', gaugeColor:'#22c55e' }
-  }
-
-  function genProfile(generation) {
-    const map = {
-      'Gen Alpha':         { riskBonus:10,  horizonYears:50, focus:'Education & Long-term Growth' },
-      'Gen Z':             { riskBonus:8,   horizonYears:40, focus:'Wealth Building & Financial Independence' },
-      'Millennial':        { riskBonus:5,   horizonYears:30, focus:'Home, Family & Retirement Prep' },
-      'Gen X':             { riskBonus:0,   horizonYears:20, focus:'Peak Earning & Retirement Build-up' },
-      'Baby Boomer':       { riskBonus:-8,  horizonYears:10, focus:'Capital Preservation & Income' },
-      'Silent Generation': { riskBonus:-15, horizonYears:5,  focus:'Income, Safety & Legacy Planning' },
-    }
-    return map[generation] || map['Millennial']
-  }
-
-  function accountAdj(accountType) {
-    const map = {
-      'checking':   { delta:-5,  note:'Day-to-day account — prioritise liquid, low-risk assets first.' },
-      'savings':    { delta:0,   note:'Solid foundation — a healthy mix of liquid and growth assets.' },
-      'brokerage':  { delta:10,  note:'Investment-ready account — higher growth allocation is ideal.' },
-      'roth_ira':   { delta:8,   note:'Tax-free growth — great for long-term aggressive compounding.' },
-      '401k':       { delta:6,   note:'Always contribute enough to get your full employer match — it\'s free money.' },
-      'isa':        { delta:8,   note:'Tax-free ISA wrapper — maximise compounding growth year after year.' },
-      'retirement': { delta:5,   note:'Long-horizon account — focus on tax-efficient diversified growth.' },
-      'other':      { delta:0,   note:'Diversified multi-asset approach recommended.' },
-    }
-    return map[accountType] || map['other']
-  }
-
-  function compound(monthly, annualRate, years) {
-    const r = annualRate / 100 / 12, m = years * 12
-    if (r === 0) return monthly * m
-    return Math.round(monthly * ((Math.pow(1+r,m)-1)/r))
-  }
-
-  function fmtCurrency(n) {
-    if (n >= 1e6) return '$'+(n/1e6).toFixed(1)+'M'
-    if (n >= 1e3) return '$'+(n/1e3).toFixed(0)+'K'
-    return '$'+n.toLocaleString()
-  }
-
-  function buildPortfolio(profile) {
-    const { age, generation, accountType, riskScore, monthlySavings=500 } = profile
-    const gp   = genProfile(generation)
-    const adj  = accountAdj(accountType)
-    const ageE = Math.max(10, Math.min(90, 110 - age))
-    const adjScore = Math.max(0, Math.min(100, riskScore + gp.riskBonus + adj.delta))
-    const rInfo    = getRiskInfo(adjScore)
-    const equity   = Math.round(Math.max(5,Math.min(95, ageE*0.4 + adjScore*0.6)))
-    const fixed    = 100 - equity
-
-    let alloc = []
-    if (rInfo.level === 'Aggressive') {
-      alloc = [
-        { name:'US Growth Stocks',         pct:Math.round(equity*.35), color:'#6366f1', risk:'High',   desc:'Large-cap tech & growth (e.g. S&P 500 Growth ETF, VTI)' },
-        { name:'International Stocks',     pct:Math.round(equity*.25), color:'#8b5cf6', risk:'High',   desc:'Emerging markets & global diversification (VXUS)' },
-        { name:'Small-Cap / Value Stocks', pct:Math.round(equity*.20), color:'#a78bfa', risk:'High',   desc:'High-potential smaller companies for extra growth' },
-        { name:'REITs / Real Assets',      pct:Math.round(equity*.10), color:'#f59e0b', risk:'Medium', desc:'Real estate investment trusts for income + growth' },
-        { name:'Corporate Bonds',          pct:Math.round(fixed *.55), color:'#10b981', risk:'Low',    desc:'Investment-grade bonds — stability anchor (BND)' },
-        { name:'Government Bonds',         pct:Math.round(fixed *.30), color:'#34d399', risk:'Low',    desc:'Treasury bonds — safest fixed income available' },
-        { name:'Cash / Money Market',      pct:Math.round(fixed *.15), color:'#6ee7b7', risk:'None',   desc:'Liquid emergency buffer, money-market funds' },
-      ]
-    } else if (rInfo.level === 'Moderate') {
-      alloc = [
-        { name:'Index Funds (Total Market)',pct:Math.round(equity*.45), color:'#6366f1', risk:'Medium', desc:'Broad market exposure via low-cost index funds (VTI)' },
-        { name:'International Stocks',      pct:Math.round(equity*.25), color:'#8b5cf6', risk:'Medium', desc:'Developed market international equities (VXUS)' },
-        { name:'Dividend Stocks',           pct:Math.round(equity*.20), color:'#ec4899', risk:'Medium', desc:'Stable dividend-paying blue-chips (SCHD)' },
-        { name:'REITs',                     pct:Math.round(equity*.10), color:'#f59e0b', risk:'Medium', desc:'Real estate exposure without direct ownership (VNQ)' },
-        { name:'Corporate Bonds',           pct:Math.round(fixed *.50), color:'#10b981', risk:'Low',   desc:'Mix of investment-grade bond funds (BND, VCSH)' },
-        { name:'Government Bonds',          pct:Math.round(fixed *.35), color:'#34d399', risk:'Low',   desc:'US Treasuries & government securities (VGLT)' },
-        { name:'Cash / Savings',            pct:Math.round(fixed *.15), color:'#6ee7b7', risk:'None',  desc:'3-6 month emergency fund in high-yield savings' },
-      ]
-    } else if (rInfo.level === 'Conservative') {
-      alloc = [
-        { name:'Government Bonds / TIPS',   pct:Math.round(fixed *.40), color:'#34d399', risk:'Low',    desc:'Treasury bonds + TIPS for inflation protection' },
-        { name:'Corporate Bonds',           pct:Math.round(fixed *.30), color:'#10b981', risk:'Low',    desc:'Investment-grade corporate bonds (VCSH)' },
-        { name:'Dividend / Value Stocks',   pct:Math.round(equity*.50), color:'#6366f1', risk:'Medium', desc:'Blue-chip dividend-paying companies (SCHD, VYM)' },
-        { name:'Index Funds',               pct:Math.round(equity*.30), color:'#8b5cf6', risk:'Medium', desc:'Low-cost diversified total-market index (VTI)' },
-        { name:'REITs',                     pct:Math.round(equity*.20), color:'#f59e0b', risk:'Medium', desc:'Stable real estate income (VNQ)' },
-        { name:'Cash / CDs',               pct:Math.round(fixed *.30), color:'#6ee7b7', risk:'None',   desc:'High-yield savings, CDs, money market (4-5% APY)' },
-      ]
+// ── CSV parser (handles quoted fields) ──
+function parseCSV(text){
+  const rows=[]; let i=0,field='',row=[],inQ=false;
+  text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  while(i<text.length){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++} else inQ=false } else field+=c;
     } else {
-      alloc = [
-        { name:'Government Bonds / TIPS',  pct:35, color:'#34d399', risk:'Low',  desc:'Treasury bonds indexed to inflation — I-Bonds, TIPS' },
-        { name:'High-Yield Savings / CDs', pct:25, color:'#6ee7b7', risk:'None', desc:'FDIC-insured high-interest accounts (4.5-5%+ APY)' },
-        { name:'Money Market Funds',       pct:15, color:'#a7f3d0', risk:'None', desc:'Liquid, safe short-term instruments — SPAXX, VMFXX' },
-        { name:'Investment-Grade Bonds',   pct:15, color:'#10b981', risk:'Low',  desc:'AAA/AA-rated corporate debt for steady income (BND)' },
-        { name:'Dividend Stocks',          pct:7,  color:'#6366f1', risk:'Low',  desc:'Stable income-producing equities — JNJ, KO, VYM' },
-        { name:'Cash Equivalents',         pct:3,  color:'#c7d2fe', risk:'None', desc:'Ultra-liquid buffer — T-Bills, short-term notes' },
-      ]
+      if(c==='"') inQ=true;
+      else if(c===','){row.push(field);field=''}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field=''}
+      else field+=c;
     }
-
-    // Normalise to exactly 100% (largest-remainder method to avoid rounding drift)
-    const tot = alloc.reduce((s,a)=>s+a.pct,0)
-    const scaled = alloc.map(a=>({...a, exact:a.pct/tot*100}))
-    scaled.forEach(a=>a.pct=Math.floor(a.exact))
-    let remainder = 100 - scaled.reduce((s,a)=>s+a.pct,0)
-    scaled.sort((a,b)=>(b.exact-b.pct)-(a.exact-a.pct))
-    for(let i=0;i<remainder;i++) scaled[i % scaled.length].pct++
-    // restore original display order
-    alloc = scaled.sort((a,b)=>b.pct-a.pct).map(({exact,...rest})=>rest)
-
-    const returns = {
-      'Aggressive':       { low:7,  mid:10, high:14 },
-      'Moderate':         { low:5,  mid:7,  high:10 },
-      'Conservative':     { low:3,  mid:5,  high:7  },
-      'Very Conservative':{ low:2,  mid:3,  high:5  },
-    }[rInfo.level]
-
-    const horizon = gp.horizonYears
-    const proj = {
-      y10:     compound(monthlySavings, returns.mid, 10),
-      y20:     compound(monthlySavings, returns.mid, 20),
-      yHorizon:compound(monthlySavings, returns.mid, horizon),
-      horizon,
-    }
-
-    const warnings = []
-    if (age >= 60 && adjScore >= 65) warnings.push({ type:'warning', msg:'⚠️ Your risk appetite is high for your age. Consider gradually reducing equity exposure to protect accumulated wealth.' })
-    if (age < 30 && adjScore < 25)   warnings.push({ type:'info',    msg:'💡 Young investors benefit most from higher risk tolerance — time in the market is your greatest advantage.' })
-    if (profile.monthlySavings < 100) warnings.push({ type:'info',   msg:'🌱 Even $50-100/month compounds into a significant sum. Consistency beats amount — start now!' })
-    if (age >= 50) warnings.push({ type:'tip', msg:'🎯 Catch-up contributions available: extra $1,000/yr to IRAs, $7,500/yr to 401(k)s.' })
-
-    return { rInfo, adjScore, alloc, returns, gp, adj, proj, warnings, fmtCurrency }
+    i++;
   }
-
-  const RECOMMENDATIONS = {
-    'Gen Alpha':   [
-      { icon:'🎓', title:'Start a 529 Education Plan',      desc:'Tax-advantaged savings for education with strong growth potential over decades of compounding.' },
-      { icon:'📈', title:'Custodial Roth IRA',              desc:'If you have earned income, contribute now — tax-free compounding for 50+ years is unbeatable.' },
-    ],
-    'Gen Z': [
-      { icon:'🏦', title:'Max Out Your Roth IRA',           desc:'At your age, Roth IRA is gold — pay taxes now, never pay on growth. $7,000/year limit.' },
-      { icon:'💼', title:"Employer 401(k) Match",           desc:"Always contribute at least enough to get your employer's full match — it's an instant 50-100% return." },
-      { icon:'🏠', title:'REITs for Real Estate Exposure',  desc:'Get real estate returns without a down payment via low-cost REIT index funds like VNQ.' },
-    ],
-    'Millennial': [
-      { icon:'🎯', title:'Target-Date Funds',               desc:'One-fund solution that auto-rebalances as you approach retirement. Perfect set-and-forget strategy.' },
-      { icon:'🏠', title:'Real Estate Consideration',       desc:'With growing income, real estate (direct or via REITs) adds inflation protection and diversification.' },
-      { icon:'💰', title:'Increase Your Savings Rate',      desc:'Every 1% more you save today can add years of financial freedom later. Aim for 15-20% of gross income.' },
-    ],
-    'Gen X': [
-      { icon:'🔄', title:'Catch-Up Contributions',          desc:'Over 50? You can contribute an extra $1,000 to IRA and $7,500 to 401(k) annually.' },
-      { icon:'📊', title:'Portfolio Rebalancing',           desc:'Review and rebalance quarterly. As retirement nears, shift gradually from growth to income.' },
-      { icon:'🛡️', title:'Insurance Review',               desc:'Long-term care insurance, life insurance, and disability coverage are critical at this stage.' },
-    ],
-    'Baby Boomer': [
-      { icon:'📅', title:'Social Security Strategy',        desc:'Delaying Social Security to age 70 increases your monthly benefit by up to 32% vs. taking it at 62.' },
-      { icon:'💊', title:'Healthcare Cost Planning',        desc:'HSA contributions and Medicare supplement insurance are key hedges against healthcare inflation.' },
-      { icon:'🏦', title:'Required Minimum Distributions',  desc:'Plan for RMDs from tax-deferred accounts starting at age 73 to avoid a 25% penalty.' },
-    ],
-    'Silent Generation': [
-      { icon:'🏦', title:'Capital Preservation First',      desc:'FDIC-insured accounts, government bonds, and annuities protect your principal above all else.' },
-      { icon:'📜', title:'Estate & Legacy Planning',        desc:'Review wills, trusts, and beneficiary designations to ensure assets transfer as intended.' },
-      { icon:'💵', title:'Dividend Income Strategy',        desc:'Blue-chip dividend stocks provide steady income with moderate inflation protection.' },
-    ],
-  }
-
-  const PRODUCTS = {
-    'Aggressive':       [
-      { icon:'📦', title:'VTI — Total Stock Market ETF',   desc:"Vanguard's flagship low-cost ETF covering the entire US equity market. 0.03% expense ratio." },
-      { icon:'🌍', title:'VXUS — International ETF',       desc:'Diversifies beyond US with developed and emerging market exposure in a single fund.' },
-      { icon:'💹', title:'QQQ — Nasdaq-100 ETF',           desc:'Tech-heavy growth ETF capturing innovation leaders like Apple, Microsoft, and NVIDIA.' },
-    ],
-    'Moderate':         [
-      { icon:'⚖️', title:'VBIAX — Balanced Index Fund',    desc:'The classic 60/40 stocks-to-bonds allocation in a single low-cost Vanguard fund.' },
-      { icon:'🏢', title:'VNQ — REIT ETF',                 desc:'Real estate exposure with regular dividend distributions and low correlation to stocks.' },
-      { icon:'📈', title:'SCHD — Dividend ETF',            desc:'Quality dividend-paying stocks with strong historical performance and low volatility.' },
-    ],
-    'Conservative':     [
-      { icon:'🏛️', title:'BND — Bond Market ETF',          desc:'Total US bond market exposure, investment-grade securities only, ultra-low cost.' },
-      { icon:'💰', title:'VCSH — Short-Term Corp Bonds',   desc:'Lower duration bond fund reduces interest rate risk while maintaining solid income.' },
-      { icon:'🛡️', title:'I-Bonds (US Treasury)',          desc:'Inflation-protected savings bonds with competitive rates — zero market risk.' },
-    ],
-    'Very Conservative':[
-      { icon:'🏦', title:'High-Yield Savings Account',     desc:'FDIC-insured accounts currently offering 4.5-5%+ APY from online banks like Marcus, Ally.' },
-      { icon:'📄', title:'Treasury Bills (T-Bills)',        desc:'Short-term government securities with ~5% yields. Zero default risk, guaranteed by US government.' },
-      { icon:'💳', title:'CDs (Certificates of Deposit)',  desc:'Lock in current high rates for 6-24 months with FDIC protection up to $250,000.' },
-    ],
-  }
-
-  function getRecommendations(generation, riskLevel) {
-    return [
-      ...(RECOMMENDATIONS[generation] || RECOMMENDATIONS['Millennial']),
-      ...(PRODUCTS[riskLevel] || [])
-    ]
-  }
-
-  return { detectGeneration, buildPortfolio, getRecommendations, fmtCurrency }
-})()
-
-
-// ─── State ────────────────────────────────────────────────────────
-let state = {
-  screen: 'landing',  // landing | steps | results
-  step:   0,
-  profile:{},
-  errors: {},
-  result: null,
+  if(field.length||row.length){row.push(field);rows.push(row)}
+  const header=rows.shift().map(h=>h.trim());
+  return rows.filter(r=>r.length>1||r[0]!=='').map(r=>{
+    const o={}; header.forEach((h,idx)=>o[h]=(r[idx]!==undefined?r[idx].trim():'')); return o;
+  });
 }
 
-function setState(updates) {
-  state = { ...state, ...updates }
-  render()
+// ═══════════════ CONFIGURATION (documented, dataset-aligned) ═══════════════
+
+// Portfolio buckets — every productType maps to exactly one bucket.
+const BUCKET_OF_TYPE = {
+  'State Savings':'Savings Account','Savings Account':'Savings Account','Money Market Fund':'Savings Account',
+  'Fixed Deposit':'Fixed Deposits',
+  'Insurance Investment':'Policies',
+  // everything else = Funds (stocks/bonds/pension)
+};
+const BUCKETS = ['Savings Account','Fixed Deposits','Policies','Funds'];
+const BUCKET_LABEL = {
+  'Savings Account':'Savings Account',
+  'Fixed Deposits':'Fixed Deposits',
+  'Policies':'Policies',
+  'Funds':'Funds (Stocks / Bonds / Pension)'
+};
+const BUCKET_COLOR = {
+  'Savings Account':'#10b981',
+  'Fixed Deposits':'#3b82f6',
+  'Policies':'#8b5cf6',
+  'Funds':'#f59e0b'
+};
+function bucketOf(product){
+  return BUCKET_OF_TYPE[product.productType] || 'Funds';
 }
 
-// ─── Render root ──────────────────────────────────────────────────
-function render() {
-  const app = document.getElementById('app')
-  if (state.screen === 'landing') {
-    app.innerHTML = renderLanding()
-    bindLanding()
-  } else if (state.screen === 'steps') {
-    app.innerHTML = renderSteps()
-    bindSteps()
-  } else if (state.screen === 'results') {
-    app.innerHTML = renderResults()
-    bindResults()
+// Risk levels (aligned to product risk bands) → target allocation across buckets (%).
+// Safer levels weight Savings/Fixed/Policies; riskier levels weight Funds.
+const RISK_LEVELS = ['Low','Low-Medium','Medium','Medium-High','High'];
+const ALLOCATION = {
+  'Low':         {'Savings Account':50,'Fixed Deposits':30,'Policies':15,'Funds':5},
+  'Low-Medium':  {'Savings Account':35,'Fixed Deposits':30,'Policies':15,'Funds':20},
+  'Medium':      {'Savings Account':20,'Fixed Deposits':25,'Policies':15,'Funds':40},
+  'Medium-High': {'Savings Account':10,'Fixed Deposits':15,'Policies':10,'Funds':65},
+  'High':        {'Savings Account':5, 'Fixed Deposits':10,'Policies':5, 'Funds':80},
+};
+
+// Behavioural adjustment: shifts the effective risk level up/down one notch.
+const BEHAVIOUR_SHIFT = {
+  'Cautious Saver':-1,'Regular Saver':-1,'Balanced':0,'Frequent Trader':1
+};
+
+const FIXED_INTEREST_BUCKETS = new Set(['Savings Account','Fixed Deposits','Policies']);
+
+// ═══════════════════════════ ENGINE ═══════════════════════════
+
+function shiftRisk(level, shift){
+  let idx = RISK_LEVELS.indexOf(level);
+  if(idx<0) idx = 2;
+  idx = Math.max(0, Math.min(RISK_LEVELS.length-1, idx+shift));
+  return RISK_LEVELS[idx];
+}
+
+function ageFromDOB(dob){
+  const d=new Date(dob); if(isNaN(d)) return null;
+  const now=new Date(); let a=now.getFullYear()-d.getFullYear();
+  const m=now.getMonth()-d.getMonth();
+  if(m<0||(m===0&&now.getDate()<d.getDate())) a--;
+  return a;
+}
+
+// Average expected return (%) of the products in a bucket — from dataset only.
+function bucketAvgReturn(products, bucket){
+  const list = products.filter(p=>bucketOf(p)===bucket);
+  if(!list.length) return 0;
+  return list.reduce((s,p)=>s+parseFloat(p.expectedReturnPercentage||0),0)/list.length;
+}
+
+// Representative products shown per bucket (used in the growth table).
+function bucketProducts(products, bucket){
+  return products.filter(p=>bucketOf(p)===bucket)
+    .sort((a,b)=>parseFloat(a.riskScore)-parseFloat(b.riskScore));
+}
+
+// Build the full recommendation for a customer at a given (effective) risk level.
+function buildRecommendation(customer, products, riskLevel){
+  const amount = parseFloat(customer.investableAmount||0) || 0;
+  const alloc = ALLOCATION[riskLevel];
+
+  const rows = BUCKETS.map(b=>{
+    const pct = alloc[b];
+    const amt = amount * pct/100;
+    const avgReturn = bucketAvgReturn(products, b);
+    return {
+      bucket:b, label:BUCKET_LABEL[b], color:BUCKET_COLOR[b],
+      pct, amount:amt, avgReturn,
+      isFixed:FIXED_INTEREST_BUCKETS.has(b),
+      productCount:products.filter(p=>bucketOf(p)===b).length
+    };
+  });
+
+  // Blended annual return = Σ (weight × bucket avg return), dataset-driven.
+  const blendedReturn = rows.reduce((s,r)=>s + (r.pct/100)*r.avgReturn, 0);
+
+  // 5-year yearly projection (annual compounding) for the whole portfolio.
+  const projection = [];
+  let bucketBalances = {}; rows.forEach(r=>bucketBalances[r.bucket]=r.amount);
+  for(let year=1; year<=5; year++){
+    const perBucket={};
+    rows.forEach(r=>{
+      bucketBalances[r.bucket] = bucketBalances[r.bucket]*(1+r.avgReturn/100);
+      perBucket[r.bucket]=bucketBalances[r.bucket];
+    });
+    const totalVal = Object.values(perBucket).reduce((s,v)=>s+v,0);
+    projection.push({ year, perBucket, total:totalVal, gain: totalVal-amount });
+  }
+
+  return { riskLevel, amount, alloc, rows, blendedReturn, projection };
+}
+
+// ═══════════════════════════ STATE ═══════════════════════════
+let PRODUCTS=[], CUSTOMERS=[];
+let currentCustomer=null;
+let currentRisk=null;     // effective risk level currently displayed
+let baseRisk=null;        // customer's behaviour-adjusted starting risk
+
+// ═══════════════════════════ DATA LOADING ═══════════════════════════
+async function tryFetchCSV(path){
+  try{
+    const res = await fetch(path,{cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const txt = await res.text();
+    if(!txt || txt.trim().length<10) throw new Error('empty');
+    return txt;
+  }catch(e){ return null; }
+}
+
+async function loadData(){
+  const status=document.getElementById('load-status');
+  let pCsv = await tryFetchCSV('data/products.csv');
+  let cCsv = await tryFetchCSV('data/customers.csv');
+  let usedEmbedded=false;
+  if(!pCsv){ pCsv=EMBEDDED_PRODUCTS_CSV; usedEmbedded=true; }
+  if(!cCsv){ cCsv=EMBEDDED_CUSTOMERS_CSV; usedEmbedded=true; }
+  PRODUCTS = parseCSV(pCsv);
+  CUSTOMERS = parseCSV(cCsv);
+  if(usedEmbedded){
+    status.classList.remove('hidden');
+    status.innerHTML = 'ℹ️ Loaded the built-in dataset copy (the CSV files could not be fetched directly, which is normal when opening the file locally). Data is identical to <code>data/products.csv</code> and <code>data/customers.csv</code>.';
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════
-//  LANDING PAGE
-// ═══════════════════════════════════════════════════════════════════
-function renderLanding() {
-  return `
-<div class="hero-bg">
-  <nav class="hero-nav">
-    <div class="flex items-center gap-2">
-      <span style="font-size:1.75rem">💰</span>
-      <span class="font-bold text-xl text-white">Investment Buddy</span>
-    </div>
-    <span class="hero-badge">Free · No sign-up needed</span>
-  </nav>
-
-  <section class="max-w-4xl px-6 pt-16 pb-20 text-center anim-slide" style="margin:0 auto">
-    <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:9999px;padding:.4rem 1rem;font-size:.8rem;color:#c7d2fe;margin-bottom:2rem">
-      <span class="pulse-dot" style="width:.5rem;height:.5rem;background:#4ade80;border-radius:9999px;display:inline-block"></span>
-      Smart investing for every generation
-    </div>
-
-    <h1 class="hero-title">
-      Invest Smarter,<br>
-      <span class="hero-grad">Not Harder</span>
-    </h1>
-
-    <p class="hero-sub">
-      Investment Buddy analyses your <strong style="color:#fff">age</strong>,
-      <strong style="color:#fff">generation</strong>,
-      <strong style="color:#fff">risk tolerance</strong>, and
-      <strong style="color:#fff">financial profile</strong> to recommend
-      the perfect investment strategy — just for you.
-    </p>
-
-    <button id="start-btn" class="hero-cta">
-      Get My Investment Plan
-      <span>→</span>
-    </button>
-    <p style="margin-top:.875rem;font-size:.8rem;color:#4b5563">Takes about 3 minutes · 100% free · Educational only</p>
-  </section>
-
-  <!-- Generation cards -->
-  <section class="max-w-4xl px-6 pb-16" style="margin:0 auto">
-    <p class="text-center text-xs uppercase tracking-widest font-semibold text-gray-400 mb-5">Tailored for every generation</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.75rem">
-      ${[
-        {e:'🌟',l:'Gen Alpha',  y:'2013+',       n:'Start early'},
-        {e:'⚡',l:'Gen Z',      y:'1997–2012',   n:'Build wealth'},
-        {e:'💻',l:'Millennial', y:'1981–1996',   n:'Balance growth'},
-        {e:'🎸',l:'Gen X',      y:'1965–1980',   n:'Peak earning'},
-        {e:'🕊️',l:'Baby Boomer',y:'1946–1964',  n:'Preserve income'},
-        {e:'📚',l:'Silent Gen', y:'Before \'46', n:'Safety & legacy'},
-      ].map(g=>`
-        <div class="gen-card">
-          <div style="font-size:1.75rem;margin-bottom:.375rem">${g.e}</div>
-          <div class="text-xs font-bold text-white">${g.l}</div>
-          <div style="font-size:.7rem;color:#4b5563;margin-top:.2rem">${g.y}</div>
-          <div style="font-size:.7rem;color:#a5b4fc;margin-top:.25rem;font-weight:600">${g.n}</div>
-        </div>`).join('')}
-    </div>
-  </section>
-
-  <!-- Features -->
-  <section style="background:rgba(255,255,255,.04);border-top:1px solid rgba(255,255,255,.08)">
-    <div class="feat-grid max-w-4xl px-6 py-16" style="margin:0 auto">
-      ${[
-        {i:'🎯',t:'Personalised Portfolios',d:'Built around your age, generation, and financial goals.'},
-        {i:'⚖️',t:'Risk-Aware Advice',      d:'From ultra-safe capital preservation to aggressive growth.'},
-        {i:'📊',t:'Visual Breakdowns',      d:'Clear charts showing your ideal asset allocation.'},
-        {i:'🌱',t:'Growth Projections',     d:'See how your money grows over 10, 20 and 30 years.'},
-      ].map(f=>`
-        <div class="feat-item">
-          <span class="feat-icon">${f.i}</span>
-          <div class="font-bold text-white mb-1">${f.t}</div>
-          <div class="text-sm" style="color:#9ca3af;line-height:1.5">${f.d}</div>
-        </div>`).join('')}
-    </div>
-  </section>
-
-  <footer class="text-center py-6 px-4">
-    <p style="font-size:.7rem;color:#374151;max-width:36rem;margin:0 auto">
-      ⚠️ Investment Buddy provides educational guidance only, not financial advice. Always consult a qualified financial advisor before making investment decisions. Past performance does not guarantee future results.
-    </p>
-  </footer>
-</div>`
+// ═══════════════════════════ RENDER ═══════════════════════════
+function fmtMoney(n){
+  return '€' + Math.round(n).toLocaleString('en-IE');
+}
+function riskBadgeClass(level){
+  return {'Low':'badge-low','Low-Medium':'badge-lowmed','Medium':'badge-med','Medium-High':'badge-medhigh','High':'badge-high'}[level]||'badge-med';
 }
 
-function bindLanding() {
-  document.getElementById('start-btn').onclick = () => setState({ screen:'steps', step:0 })
+function renderCustomerSelect(){
+  const sel=document.getElementById('customer-select');
+  sel.innerHTML = CUSTOMERS.map(c=>
+    `<option value="${c.customerID}">${c.firstName} ${c.lastName} — #${c.customerID}</option>`
+  ).join('');
+  sel.onchange = ()=>selectCustomer(sel.value);
 }
 
+function selectCustomer(id){
+  currentCustomer = CUSTOMERS.find(c=>c.customerID===id) || CUSTOMERS[0];
+  baseRisk = shiftRisk(currentCustomer.riskAppetite, BEHAVIOUR_SHIFT[currentCustomer.accountBehaviour]||0);
+  currentRisk = baseRisk;
+  renderApp();
+}
 
-// ═══════════════════════════════════════════════════════════════════
-//  STEP WRAPPER
-// ═══════════════════════════════════════════════════════════════════
-const STEP_NAMES = ['Personal', 'Financial', 'Risk Assessment', 'Results']
+function renderApp(){
+  const c=currentCustomer;
+  const rec=buildRecommendation(c, PRODUCTS, currentRisk);
+  const age=ageFromDOB(c.dateOfBirth);
 
-function renderSteps() {
-  const pct = Math.round((state.step / 3) * 100)
-  return `
-<div class="min-h-screen" style="background:linear-gradient(135deg,#f8fafc,#eef2ff,#f0f9ff)">
-  <header class="app-header">
-    <div class="app-header-inner">
-      <div class="flex items-center gap-2">
-        <span style="font-size:1.5rem">💰</span>
-        <span class="font-bold text-lg" style="color:var(--brand-700)">Investment Buddy</span>
+  document.getElementById('app-body').innerHTML = `
+    <!-- LEFT: profile + controls -->
+    <div>
+      <div class="card anim-slide">
+        <div class="card-title">👤 Customer Profile</div>
+        <div class="card-sub">Recommendation is based on this customer's behaviour, risk tolerance and demographic.</div>
+        <div class="profile-row"><span class="profile-key">Customer ID</span><span class="profile-val">#${c.customerID}</span></div>
+        <div class="profile-row"><span class="profile-key">Name</span><span class="profile-val">${c.firstName} ${c.lastName}</span></div>
+        <div class="profile-row"><span class="profile-key">Age</span><span class="profile-val">${age!==null?age+' yrs':'—'}</span></div>
+        <div class="profile-row"><span class="profile-key">Location</span><span class="profile-val">${c.city}, ${c.country}</span></div>
+        <div class="profile-row"><span class="profile-key">Stated risk appetite</span><span class="profile-val"><span class="badge ${riskBadgeClass(c.riskAppetite)}">${c.riskAppetite}</span></span></div>
+        <div class="profile-row"><span class="profile-key">Account behaviour</span><span class="profile-val">${c.accountBehaviour}</span></div>
+        <div class="profile-row"><span class="profile-key">Behaviour-adjusted risk</span><span class="profile-val"><span class="badge ${riskBadgeClass(baseRisk)}">${baseRisk}</span></span></div>
       </div>
-      <button id="restart-btn" class="text-sm" style="color:#9ca3af;font-weight:600">← Start Over</button>
-    </div>
-  </header>
 
-  <div class="max-w-3xl px-4" style="margin:0 auto;padding-top:1.5rem">
-    <!-- Progress -->
-    <div class="mb-6">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-        <span class="text-xs font-semibold" style="color:var(--brand-600)">${STEP_NAMES[state.step]}</span>
-        <span class="text-xs" style="color:#9ca3af">Step ${state.step+1} of 3</span>
+      <div class="card">
+        <div class="card-title">💶 Amount to Invest</div>
+        <div class="card-sub">From the dataset (editable for this session).</div>
+        <input id="amount-input" class="input-field" type="number" min="0" step="500" value="${rec.amount}">
       </div>
-      <div class="progress-track">
-        <div class="progress-fill" style="width:${pct}%"></div>
-      </div>
-      <div style="display:flex;gap:.375rem;margin-top:.5rem">
-        ${[0,1,2].map(i=>`<div style="flex:1;height:.25rem;border-radius:9999px;background:${i<=state.step?'var(--brand-500)':'#e2e8f0'};transition:background .3s"></div>`).join('')}
-      </div>
-    </div>
 
-    <!-- Step content -->
-    <div class="anim-slide">
-      ${state.step === 0 ? renderStep1() : ''}
-      ${state.step === 1 ? renderStep2() : ''}
-      ${state.step === 2 ? renderStep3() : ''}
-    </div>
-  </div>
-</div>`
-}
-
-function bindSteps() {
-  const rb = document.getElementById('restart-btn')
-  if (rb) rb.onclick = () => setState({ screen:'landing', step:0, profile:{}, errors:{} })
-
-  if (state.step === 0) bindStep1()
-  if (state.step === 1) bindStep2()
-  if (state.step === 2) bindStep3()
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-//  STEP 1 — PERSONAL INFO
-// ═══════════════════════════════════════════════════════════════════
-const GOALS = [
-  {id:'retirement',  icon:'🏖️', label:'Retirement',       desc:'Build a comfortable nest egg'},
-  {id:'wealth',      icon:'📈', label:'Wealth Building',  desc:'Grow net worth over time'},
-  {id:'home',        icon:'🏠', label:'Buy a Home',       desc:'Save for a down payment'},
-  {id:'education',   icon:'🎓', label:'Education',        desc:'Fund studies for self / family'},
-  {id:'emergency',   icon:'🛡️', label:'Emergency Fund',  desc:'Build a financial safety net'},
-  {id:'income',      icon:'💵', label:'Passive Income',   desc:'Generate regular cash flow'},
-]
-
-let s1 = { name:'', birthYear:'', goals: new Set() }
-
-function renderStep1() {
-  const yr  = parseInt(s1.birthYear, 10)
-  const gen = (yr >= 1920 && yr <= 2010) ? Engine.detectGeneration(yr) : null
-  const age = gen ? new Date().getFullYear() - yr : null
-
-  return `
-<div class="space-y-5">
-  <div class="step-header">
-    <span class="step-icon">👤</span>
-    <h2 class="step-title">Tell us about yourself</h2>
-    <p class="step-desc">We'll tailor your investment plan to your life stage.</p>
-  </div>
-
-  <!-- Name -->
-  <div class="card">
-    <label class="form-label">Your Name <span style="color:#ef4444">*</span></label>
-    <input id="s1-name" type="text" class="input-field" placeholder="e.g. Alex Johnson" value="${escHtml(s1.name)}">
-    ${state.errors.name ? `<p class="form-error">${state.errors.name}</p>` : ''}
-  </div>
-
-  <!-- Birth Year -->
-  <div class="card">
-    <label class="form-label">Birth Year <span style="color:#ef4444">*</span></label>
-    <div class="flex gap-4 items-start">
-      <div style="flex:1">
-        <input id="s1-year" type="number" class="input-field" placeholder="e.g. 1990" min="1920" max="2010" value="${s1.birthYear}">
-        ${state.errors.birthYear ? `<p class="form-error">${state.errors.birthYear}</p>` : ''}
-      </div>
-      ${gen ? `
-      <div style="flex-shrink:0;background:linear-gradient(135deg,var(--brand-50),#eef2ff);border:1.5px solid var(--brand-200);border-radius:1rem;padding:.875rem 1rem;text-align:center;min-width:100px" class="anim-fade">
-        <div style="font-size:1.75rem">${gen.emoji}</div>
-        <div class="text-xs font-bold" style="color:var(--brand-700);margin-top:.2rem">${gen.label}</div>
-        <div class="text-xs" style="color:#9ca3af">Age ${age}</div>
-      </div>` : ''}
-    </div>
-    ${gen ? `<div style="margin-top:.75rem;padding:.75rem 1rem;background:var(--brand-50);border-radius:.75rem;border:1px solid var(--brand-100)" class="anim-fade">
-      <p class="text-sm" style="color:var(--brand-700)"><strong>${gen.emoji} ${gen.label}</strong> — ${age < 30 ? "Time is your biggest advantage — start early and let compounding work its magic!" : age < 50 ? "Build wealth strategically during your peak earning years." : "Shift focus to preservation and income generation."}</p>
-    </div>` : ''}
-  </div>
-
-  <!-- Goals -->
-  <div class="card">
-    <label class="form-label">Investment Goals <span style="color:#ef4444">*</span></label>
-    <p class="form-hint mb-3">Select all that apply</p>
-    <div class="grid-2">
-      ${GOALS.map(g=>`
-      <button type="button" class="opt-card goal-btn ${s1.goals.has(g.id)?'active':''}" data-goal="${g.id}">
-        <div class="flex items-center gap-3">
-          <span style="font-size:1.5rem">${g.icon}</span>
-          <div>
-            <div class="text-sm font-semibold" style="color:#1f2937">${g.label}</div>
-            <div class="text-xs" style="color:#9ca3af">${g.desc}</div>
-          </div>
-          ${s1.goals.has(g.id)?`<span style="margin-left:auto;color:var(--brand-600);font-weight:800">✓</span>`:''}
-        </div>
-      </button>`).join('')}
-    </div>
-    ${state.errors.goals ? `<p class="form-error">${state.errors.goals}</p>` : ''}
-  </div>
-
-  <button id="s1-next" class="btn-primary">Continue →</button>
-</div>`
-}
-
-function bindStep1() {
-  const nameIn = document.getElementById('s1-name')
-  const yearIn = document.getElementById('s1-year')
-
-  nameIn.oninput = e => { s1.name = e.target.value }
-  yearIn.oninput = e => {
-    s1.birthYear = e.target.value
-    // re-render just the step to show generation badge
-    const container = document.querySelector('.anim-slide')
-    if (container) {
-      container.innerHTML = renderStep1()
-      bindStep1Fields()
-    }
-  }
-  bindStep1Fields()
-
-  document.getElementById('s1-next').onclick = () => {
-    const errs = {}
-    if (!s1.name.trim()) errs.name = 'Please enter your name'
-    const yr = parseInt(s1.birthYear,10)
-    if (!s1.birthYear)                         errs.birthYear = 'Please enter your birth year'
-    else if (yr < 1920 || yr > 2010)           errs.birthYear = 'Please enter a year between 1920 and 2010'
-    if (s1.goals.size === 0)                   errs.goals = 'Please select at least one goal'
-    setState({ errors: errs })
-    if (Object.keys(errs).length) return
-    const age = new Date().getFullYear() - yr
-    const gen  = Engine.detectGeneration(yr)
-    setState({
-      errors:{},
-      step:1,
-      profile:{...state.profile,
-        name:s1.name.trim(), birthYear:yr, age, generation:gen.label, goals:[...s1.goals]
-      }
-    })
-  }
-}
-
-function bindStep1Fields() {
-  document.querySelectorAll('.goal-btn').forEach(btn=>{
-    btn.onclick = e => {
-      const id = btn.dataset.goal
-      if (s1.goals.has(id)) s1.goals.delete(id); else s1.goals.add(id)
-      const container = document.querySelector('.anim-slide')
-      if (container) { container.innerHTML = renderStep1(); bindStep1Fields() }
-      // Re-attach top-level events
-      const n = document.getElementById('s1-name')
-      const y = document.getElementById('s1-year')
-      if(n) n.oninput = ev => { s1.name = ev.target.value }
-      if(y) y.oninput = ev => { s1.birthYear = ev.target.value; const c=document.querySelector('.anim-slide'); if(c){c.innerHTML=renderStep1();bindStep1Fields()} }
-      const nb = document.getElementById('s1-next')
-      if(nb) nb.onclick = document.getElementById('s1-next')?.onclick
-    }
-  })
-  document.getElementById('s1-next').onclick = () => {
-    const errs = {}
-    if (!s1.name.trim()) errs.name = 'Please enter your name'
-    const yr = parseInt(s1.birthYear,10)
-    if (!s1.birthYear)               errs.birthYear = 'Please enter your birth year'
-    else if (yr<1920||yr>2010)       errs.birthYear = 'Please enter a year between 1920 and 2010'
-    if (s1.goals.size===0)           errs.goals = 'Please select at least one goal'
-    setState({errors:errs})
-    if (Object.keys(errs).length) return
-    const age = new Date().getFullYear()-yr
-    const gen = Engine.detectGeneration(yr)
-    setState({errors:{},step:1,profile:{...state.profile,name:s1.name.trim(),birthYear:yr,age,generation:gen.label,goals:[...s1.goals]}})
-  }
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-//  STEP 2 — FINANCIAL PROFILE
-// ═══════════════════════════════════════════════════════════════════
-const ACCOUNT_TYPES = [
-  {id:'checking',  icon:'💳', label:'Checking',     desc:'Day-to-day banking'},
-  {id:'savings',   icon:'🏦', label:'Savings',      desc:'Interest-bearing savings'},
-  {id:'brokerage', icon:'📈', label:'Brokerage',    desc:'Taxable investment acct'},
-  {id:'roth_ira',  icon:'🔐', label:'Roth IRA',     desc:'Tax-free retirement'},
-  {id:'401k',      icon:'🏛️', label:'401(k)',       desc:'Employer retirement plan'},
-  {id:'isa',       icon:'🇬🇧', label:'ISA (UK)',    desc:'Individual Savings Acct'},
-  {id:'retirement',icon:'🌅', label:'Other Retire', desc:'IRA, pension, etc.'},
-  {id:'other',     icon:'💼', label:'Other',        desc:'Other account types'},
-]
-const INCOME_RANGES = [
-  {id:'u25',   label:'Under $25,000',       val:20000 },
-  {id:'25_50', label:'$25,000 – $50,000',   val:37500 },
-  {id:'50_75', label:'$50,000 – $75,000',   val:62500 },
-  {id:'75_100',label:'$75,000 – $100,000',  val:87500 },
-  {id:'100_150',label:'$100,000 – $150,000',val:125000},
-  {id:'150p',  label:'$150,000+',           val:175000},
-  {id:'no',    label:'Prefer not to say',   val:null  },
-]
-const USAGE = [
-  {id:'daily',   icon:'📅', label:'Daily',   desc:'I check it every day'},
-  {id:'weekly',  icon:'📆', label:'Weekly',  desc:'A few times per week'},
-  {id:'monthly', icon:'🗓️', label:'Monthly', desc:'Once or twice a month'},
-  {id:'rarely',  icon:'💤', label:'Rarely',  desc:'Set it and forget it'},
-]
-const EXPERIENCE = [
-  {id:'none',        icon:'🌱', label:'None',         desc:"Just getting started"},
-  {id:'beginner',    icon:'📗', label:'Beginner',     desc:'Know the basics'},
-  {id:'intermediate',icon:'📘', label:'Intermediate', desc:'Invested a few years'},
-  {id:'advanced',    icon:'📕', label:'Advanced',     desc:'Actively manage portfolio'},
-]
-const HORIZONS = [
-  {val:'3',  icon:'⚡', label:'Short-term',  sub:'< 3 years'},
-  {val:'10', icon:'📅', label:'Medium-term', sub:'3 – 10 years'},
-  {val:'20', icon:'🌳', label:'Long-term',   sub:'10 – 20 years'},
-  {val:'30', icon:'🏔️', label:'Very long',  sub:'20 – 30 years'},
-  {val:'40', icon:'♾️', label:'Lifetime',   sub:'30+ years'},
-]
-
-let s2 = { accountType:'', incomeId:'', monthlySavings:'', usage:'', experience:'', horizon:'' }
-
-function renderStep2() {
-  return `
-<div class="space-y-5">
-  <div class="step-header">
-    <span class="step-icon">💼</span>
-    <h2 class="step-title">Your Financial Profile</h2>
-    <p class="step-desc">Help us understand your financial situation and habits.</p>
-  </div>
-
-  <!-- Account Type -->
-  <div class="card">
-    <label class="form-label">Primary Account Type <span style="color:#ef4444">*</span></label>
-    <p class="form-hint mb-3">What type of account will you invest through?</p>
-    <div class="grid-4">
-      ${ACCOUNT_TYPES.map(a=>`
-      <button type="button" class="opt-card acc-btn ${s2.accountType===a.id?'active':''}" data-id="${a.id}" style="text-align:center">
-        <div style="font-size:1.5rem;margin-bottom:.35rem">${a.icon}</div>
-        <div class="text-xs font-semibold" style="color:#1f2937">${a.label}</div>
-        <div class="text-xs" style="color:#9ca3af;margin-top:.2rem;line-height:1.3">${a.desc}</div>
-      </button>`).join('')}
-    </div>
-    ${state.errors.accountType?`<p class="form-error">${state.errors.accountType}</p>`:''}
-  </div>
-
-  <!-- Income & Savings -->
-  <div class="card">
-    <div class="grid-2">
-      <div>
-        <label class="form-label">Annual Income</label>
-        <select id="s2-income" class="select-field">
-          <option value="">Select range...</option>
-          ${INCOME_RANGES.map(r=>`<option value="${r.id}" ${s2.incomeId===r.id?'selected':''}>${r.label}</option>`).join('')}
+      <div class="card">
+        <div class="card-title">🎚️ Adjust Risk Level</div>
+        <div class="card-sub">Change the risk to preview a different portfolio. Starting point is the behaviour-adjusted risk (${baseRisk}).</div>
+        <select id="risk-select" class="select-field">
+          ${RISK_LEVELS.map(r=>`<option value="${r}" ${r===currentRisk?'selected':''}>${r}${r===baseRisk?'  (recommended)':''}</option>`).join('')}
         </select>
-      </div>
-      <div>
-        <label class="form-label">Monthly Investment Amount</label>
-        <div class="relative" style="position:relative">
-          <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#9ca3af;font-weight:700">$</span>
-          <input id="s2-savings" type="number" class="input-field" style="padding-left:2rem" placeholder="e.g. 500" min="0" value="${s2.monthlySavings}">
+        <div class="stat-grid mt-2">
+          <div class="stat"><div class="stat-val">${rec.blendedReturn.toFixed(2)}%</div><div class="stat-lbl">Blended annual return</div></div>
+          <div class="stat"><div class="stat-val">${fmtMoney(rec.projection[4].total)}</div><div class="stat-lbl">Projected value (5 yrs)</div></div>
         </div>
-        <p class="form-hint">How much can you invest each month?</p>
+        <div class="flex gap-2 wrap mt-2">
+          <button id="save-btn" class="btn btn-primary">💾 Save Recommendation</button>
+          <button id="download-btn" class="btn btn-ghost">⬇️ Download JSON</button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Account Usage -->
-  <div class="card">
-    <label class="form-label">How often do you check your investments? <span style="color:#ef4444">*</span></label>
-    <p class="form-hint mb-3">This tells us your engagement style</p>
-    <div class="grid-4">
-      ${USAGE.map(u=>`
-      <button type="button" class="opt-card usage-btn ${s2.usage===u.id?'active':''}" data-id="${u.id}" style="text-align:center">
-        <div style="font-size:1.5rem;margin-bottom:.35rem">${u.icon}</div>
-        <div class="text-sm font-semibold" style="color:#1f2937">${u.label}</div>
-        <div class="text-xs" style="color:#9ca3af;margin-top:.2rem">${u.desc}</div>
-      </button>`).join('')}
-    </div>
-    ${state.errors.usage?`<p class="form-error">${state.errors.usage}</p>`:''}
-  </div>
-
-  <!-- Experience -->
-  <div class="card">
-    <label class="form-label">Investment Experience <span style="color:#ef4444">*</span></label>
-    <p class="form-hint mb-3">Be honest — there's no wrong answer!</p>
-    <div class="grid-4">
-      ${EXPERIENCE.map(x=>`
-      <button type="button" class="opt-card exp-btn ${s2.experience===x.id?'active':''}" data-id="${x.id}" style="text-align:center">
-        <div style="font-size:1.5rem;margin-bottom:.35rem">${x.icon}</div>
-        <div class="text-sm font-semibold" style="color:#1f2937">${x.label}</div>
-        <div class="text-xs" style="color:#9ca3af;margin-top:.2rem;line-height:1.3">${x.desc}</div>
-      </button>`).join('')}
-    </div>
-    ${state.errors.experience?`<p class="form-error">${state.errors.experience}</p>`:''}
-  </div>
-
-  <!-- Time Horizon -->
-  <div class="card">
-    <label class="form-label">Investment Time Horizon <span style="color:#ef4444">*</span></label>
-    <p class="form-hint mb-3">How long can you leave this money invested?</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.75rem">
-      ${HORIZONS.map(h=>`
-      <button type="button" class="opt-card hor-btn ${s2.horizon===h.val?'active':''}" data-val="${h.val}" style="text-align:center">
-        <div style="font-size:1.5rem;margin-bottom:.3rem">${h.icon}</div>
-        <div class="text-sm font-bold" style="color:#1f2937">${h.label}</div>
-        <div class="text-xs" style="color:#9ca3af">${h.sub}</div>
-      </button>`).join('')}
-    </div>
-    ${state.errors.horizon?`<p class="form-error">${state.errors.horizon}</p>`:''}
-  </div>
-
-  <div class="flex gap-3">
-    <button id="s2-back" class="btn-secondary" style="flex:1">← Back</button>
-    <button id="s2-next" class="btn-primary"   style="flex:2">Continue →</button>
-  </div>
-</div>`
-}
-
-function bindStep2() {
-  // Selections
-  document.querySelectorAll('.acc-btn').forEach(b=>b.onclick=()=>{s2.accountType=b.dataset.id;refreshStep2()})
-  document.querySelectorAll('.usage-btn').forEach(b=>b.onclick=()=>{s2.usage=b.dataset.id;refreshStep2()})
-  document.querySelectorAll('.exp-btn').forEach(b=>b.onclick=()=>{s2.experience=b.dataset.id;refreshStep2()})
-  document.querySelectorAll('.hor-btn').forEach(b=>b.onclick=()=>{s2.horizon=b.val||b.dataset.val;refreshStep2()})
-  document.getElementById('s2-income').onchange=e=>{s2.incomeId=e.target.value}
-  document.getElementById('s2-savings').oninput=e=>{s2.monthlySavings=e.target.value}
-
-  document.getElementById('s2-back').onclick = ()=>setState({step:0,errors:{}})
-  document.getElementById('s2-next').onclick = ()=>{
-    const errs={}
-    if(!s2.accountType) errs.accountType='Please select an account type'
-    if(!s2.usage)       errs.usage='Please select how often you check your accounts'
-    if(!s2.experience)  errs.experience='Please select your experience level'
-    if(!s2.horizon)     errs.horizon='Please select your time horizon'
-    setState({errors:errs})
-    if(Object.keys(errs).length) return
-    const income = INCOME_RANGES.find(r=>r.id===s2.incomeId)
-    setState({errors:{},step:2,profile:{...state.profile,
-      accountType:s2.accountType,
-      incomeId:s2.incomeId,
-      income:income?.val||null,
-      monthlySavings:s2.monthlySavings?parseFloat(s2.monthlySavings):500,
-      accountUsage:s2.usage,
-      experience:s2.experience,
-      timeHorizon:parseInt(s2.horizon,10),
-    }})
-  }
-}
-
-function refreshStep2() {
-  const container = document.querySelector('.anim-slide')
-  if(container){container.innerHTML=renderStep2();bindStep2()}
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-//  STEP 3 — RISK QUIZ
-// ═══════════════════════════════════════════════════════════════════
-const QUESTIONS = [
-  { id:'q1', q:'If your portfolio dropped 20% tomorrow, what would you do?', icon:'📉',
-    opts:[{l:'Sell everything immediately to stop losses',score:0},{l:'Sell some, move to safer investments',score:25},{l:'Hold steady and wait for recovery',score:60},{l:'Buy more — great buying opportunity!',score:100}] },
-  { id:'q2', q:'What is your primary motivation for investing?', icon:'🎯',
-    opts:[{l:'Protect what I have — safety above all',score:0},{l:'Modest growth with minimal risk',score:30},{l:'Balance between growth and security',score:60},{l:'Maximum growth, I accept high volatility',score:100}] },
-  { id:'q3', q:'How do you react emotionally to market volatility?', icon:'😰',
-    opts:[{l:'I panic and lose sleep over losses',score:0},{l:"I'm uncomfortable but can manage",score:25},{l:"I stay calm and stick to my plan",score:65},{l:"I'm excited — volatility means opportunity",score:100}] },
-  { id:'q4', q:'Which investment appeals most to you?', icon:'💡',
-    opts:[{l:'🏦 Savings account: guaranteed 4% return',score:0},{l:'📊 Bond fund: likely 5-6%, small chance of loss',score:30},{l:'⚖️ Balanced fund: likely 7-9%, possible 15% loss',score:65},{l:'🚀 Growth stocks: likely 12%+, possible 35% loss',score:100}] },
-  { id:'q5', q:'How long have you been investing or saving money?', icon:'🕐',
-    opts:[{l:"Haven't started yet",score:10},{l:'Less than 2 years',score:30},{l:'2 – 10 years',score:65},{l:'10+ years',score:90}] },
-  { id:'q6', q:"If you lost 30% in a year, how long until you'd need that money?", icon:'⏳',
-    opts:[{l:'I need it within 1-2 years',score:0},{l:'I might need it in 3-5 years',score:30},{l:'Not for 5-10 years',score:65},{l:'Not for 20+ years',score:100}] },
-  { id:'q7', q:'What % of monthly income can you invest without affecting lifestyle?', icon:'💰',
-    opts:[{l:'Less than 5% — money is tight',score:10},{l:'5-10% — comfortable but cautious',score:35},{l:'10-20% — decent disposable income',score:65},{l:'20%+ — strong financial position',score:100}] },
-  { id:'q8', q:'Do you have a 3-6 month emergency fund saved?', icon:'🛡️',
-    opts:[{l:'No, very limited savings',score:0},{l:'Partial — about 1-2 months',score:30},{l:'Yes — 3-4 months covered',score:65},{l:'Yes — 6+ months, very prepared',score:100}] },
-]
-
-let s3 = { current:0, answers:{} }
-
-function renderStep3() {
-  const q   = QUESTIONS[s3.current]
-  const tot = QUESTIONS.length
-  const pct = Math.round(Object.keys(s3.answers).length / tot * 100)
-  const done= Object.keys(s3.answers).length === tot
-
-  return `
-<div class="space-y-5">
-  <div class="step-header">
-    <span class="step-icon">🧠</span>
-    <h2 class="step-title">Risk Assessment</h2>
-    <p class="step-desc">${tot} quick questions to find your investment style.</p>
-  </div>
-
-  <!-- Overall quiz progress -->
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;font-size:.75rem;color:#9ca3af;margin-bottom:.375rem">
-      <span>Quiz Progress</span>
-      <span style="color:var(--brand-600);font-weight:700">${Object.keys(s3.answers).length}/${tot} answered</span>
-    </div>
-    <div class="progress-track">
-      <div class="progress-fill" style="width:${pct}%"></div>
-    </div>
-    <div class="quiz-dots">
-      ${QUESTIONS.map((qq,i)=>`<button class="quiz-dot q-dot-btn" data-i="${i}" style="background:${s3.answers[qq.id]!==undefined?'var(--brand-500)':i===s3.current?'var(--brand-300)':'#e2e8f0'};${i===s3.current?'box-shadow:0 0 0 3px rgba(99,102,241,.25)':''}"></button>`).join('')}
-    </div>
-  </div>
-
-  <!-- Question Card -->
-  <div class="card" style="border:2px solid var(--brand-100)">
-    <div class="flex items-start gap-3" style="margin-bottom:1.25rem">
-      <span style="font-size:2rem;flex-shrink:0">${q.icon}</span>
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-widest" style="color:var(--brand-500);margin-bottom:.25rem">Question ${s3.current+1} of ${tot}</p>
-        <h3 class="font-bold" style="color:#1f2937;font-size:1rem;line-height:1.4">${q.q}</h3>
-      </div>
-    </div>
-    <div class="space-y-3" id="q-options">
-      ${q.opts.map((opt,i)=>`
-      <button type="button" class="w-full opt-card q-opt-btn ${s3.answers[q.id]===opt.score?'active':''}" data-score="${opt.score}" style="text-align:left;font-size:.9rem;font-weight:500;color:#374151">
-        <span style="color:#9ca3af;font-family:monospace;font-size:.75rem;margin-right:.5rem">${String.fromCharCode(65+i)}.</span>
-        ${opt.l}
-        ${s3.answers[q.id]===opt.score?'<span style="float:right;color:var(--brand-600);font-weight:800">✓</span>':''}
-      </button>`).join('')}
-    </div>
-  </div>
-
-  <!-- Nav row -->
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <button id="s3-prev" class="text-sm font-semibold" style="color:#9ca3af;transition:color .15s">
-      ← ${s3.current === 0 ? 'Back to Financial Info' : 'Previous Question'}
-    </button>
-    ${s3.current < tot-1 && s3.answers[q.id]!==undefined ? `<button id="s3-next-q" class="text-sm font-semibold" style="color:var(--brand-600)">Next →</button>` : ''}
-  </div>
-
-  ${done ? `
-  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:.75rem;padding:.875rem 1rem;color:#166534;font-size:.9rem;font-weight:500;display:flex;align-items:center;gap:.75rem" class="anim-fade">
-    <span style="font-size:1.4rem">🎉</span>
-    All ${tot} questions answered! Ready to see your personalised investment plan.
-  </div>` : ''}
-
-  <button id="s3-submit" class="btn-primary" ${!done?'disabled':''}>
-    ${done ? '🚀 See My Investment Plan' : `Answer all ${tot} questions to continue`}
-  </button>
-</div>`
-}
-
-function bindStep3() {
-  document.querySelectorAll('.q-dot-btn').forEach(b=>b.onclick=()=>{s3.current=parseInt(b.dataset.i);refreshStep3()})
-  document.querySelectorAll('.q-opt-btn').forEach(b=>b.onclick=()=>{
-    const q = QUESTIONS[s3.current]
-    s3.answers[q.id] = parseInt(b.dataset.score)
-    if (s3.current < QUESTIONS.length - 1) {
-      setTimeout(()=>{s3.current++;refreshStep3()},250)
-    } else {
-      refreshStep3()
-    }
-  })
-
-  const prev = document.getElementById('s3-prev')
-  if(prev) prev.onclick=()=>{
-    if(s3.current>0){s3.current--;refreshStep3()}
-    else setState({step:1,errors:{}})
-  }
-
-  const nextQ = document.getElementById('s3-next-q')
-  if(nextQ) nextQ.onclick=()=>{s3.current++;refreshStep3()}
-
-  const submit = document.getElementById('s3-submit')
-  if(submit) submit.onclick=()=>{
-    const tot=QUESTIONS.length
-    if(Object.keys(s3.answers).length<tot) return
-    const raw  = Object.values(s3.answers).reduce((a,b)=>a+b,0)
-    const score= Math.round(raw/tot)
-    const result = Engine.buildPortfolio({...state.profile, riskScore:score})
-    const recs   = Engine.getRecommendations(state.profile.generation, result.rInfo.level)
-    setState({screen:'results', profile:{...state.profile,riskScore:score}, result:{...result,recs}})
-  }
-}
-
-function refreshStep3() {
-  const container = document.querySelector('.anim-slide')
-  if(container){container.innerHTML=renderStep3();bindStep3()}
-}
-
-
-// ═══════════════════════════════════════════════════════════════════
-//  RESULTS PAGE
-// ═══════════════════════════════════════════════════════════════════
-let activeTab = 'portfolio'
-
-function renderResults() {
-  const r   = state.result
-  const p   = state.profile
-  const fmt = Engine.fmtCurrency
-
-  if (!r) return `<div style="padding:4rem;text-align:center">No results yet.</div>`
-
-  const { rInfo, adjScore, alloc, returns, gp, adj, proj, warnings, recs } = r
-
-  return `
-<div class="min-h-screen" style="background:linear-gradient(135deg,#f8fafc,#eef2ff,#f0f9ff)">
-  <header class="app-header">
-    <div class="app-header-inner">
-      <div class="flex items-center gap-2">
-        <span style="font-size:1.5rem">💰</span>
-        <span class="font-bold text-lg" style="color:var(--brand-700)">Investment Buddy</span>
-      </div>
-      <button id="res-restart" class="btn-secondary" style="padding:.5rem 1rem;font-size:.875rem">🔄 Restart</button>
-    </div>
-  </header>
-
-  <main class="max-w-4xl px-4 py-8 space-y-6" style="margin:0 auto">
-
-    <!-- Hero Card -->
-    <div class="result-hero anim-slide">
-      <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:1.5rem">
-        <div>
-          <p style="color:#c7d2fe;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem">Your Investment Plan</p>
-          <h1 style="font-size:2.25rem;font-weight:900;margin-bottom:.3rem">${rInfo.icon} ${rInfo.level}</h1>
-          <p style="font-size:1.1rem;font-weight:600;color:#c7d2fe;margin-bottom:1.25rem">${rInfo.label}</p>
-          <div style="display:flex;flex-wrap:wrap;gap:.5rem">
-            <span style="background:rgba(255,255,255,.15);border-radius:9999px;padding:.25rem .875rem;font-size:.8rem;font-weight:600">${p.generation} · Age ${p.age}</span>
-            <span style="background:rgba(255,255,255,.15);border-radius:9999px;padding:.25rem .875rem;font-size:.8rem;font-weight:600">${returns.mid}% avg annual return</span>
-            <span style="background:rgba(255,255,255,.15);border-radius:9999px;padding:.25rem .875rem;font-size:.8rem;font-weight:600">${gp.horizonYears}yr horizon</span>
+    <!-- RIGHT: results -->
+    <div>
+      <div class="card anim-fade">
+        <div class="card-title">📊 Suggested Portfolio — ${currentRisk} risk</div>
+        <div class="card-sub">How ${c.firstName}'s ${fmtMoney(rec.amount)} is spread across product categories, based on the selected risk appetite.</div>
+        <div class="flex gap-3 wrap center">
+          <div style="flex-shrink:0">${renderDonut(rec.rows)}</div>
+          <div style="flex:1;min-width:260px">
+            ${rec.rows.map(r=>`
+              <div class="alloc-item">
+                <span class="alloc-dot" style="background:${r.color}"></span>
+                <span class="alloc-name">${r.label}</span>
+                <span class="alloc-pct" style="color:${r.color}">${r.pct}%</span>
+                <span class="alloc-amt">${fmtMoney(r.amount)}</span>
+              </div>`).join('')}
+            <div class="alloc-item" style="border-top:2px solid #cbd5e1;margin-top:.3rem;padding-top:.6rem">
+              <span class="alloc-dot" style="background:transparent"></span>
+              <span class="alloc-name" style="font-weight:800">Total</span>
+              <span class="alloc-pct" style="color:#1e293b">100%</span>
+              <span class="alloc-amt" style="font-weight:800">${fmtMoney(rec.amount)}</span>
+            </div>
           </div>
         </div>
-        ${renderGauge(adjScore, rInfo.gaugeColor)}
       </div>
 
-      <div style="margin-top:1.5rem;background:rgba(255,255,255,.12);border-radius:1rem;padding:1rem 1.25rem">
-        <p style="font-size:.7rem;color:#a5b4fc;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">Generation Focus</p>
-        <p style="font-weight:700;color:#fff">${gp.focus}</p>
-      </div>
-    </div>
-
-    <!-- Warnings -->
-    ${warnings.length ? `<div class="space-y-3 anim-fade">${warnings.map(w=>`<div class="banner-${w.type==='warning'?'warn':w.type==='tip'?'tip':'info'}">${w.msg}</div>`).join('')}</div>` : ''}
-
-    <!-- Account note -->
-    <div class="card flex items-start gap-3 anim-fade">
-      <span style="font-size:1.5rem;flex-shrink:0">🏦</span>
-      <div>
-        <p style="font-size:.7rem;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem">Account Insight</p>
-        <p class="text-sm font-semibold" style="color:#374151">${adj.note}</p>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div class="tab-bar">
-      <button class="tab-btn ${activeTab==='portfolio'?'active':''}" data-tab="portfolio">📊 Portfolio</button>
-      <button class="tab-btn ${activeTab==='growth'?'active':''}"    data-tab="growth">📈 Growth</button>
-      <button class="tab-btn ${activeTab==='tips'?'active':''}"      data-tab="tips">💡 Strategies</button>
-    </div>
-
-    <!-- Tab Content -->
-    <div id="tab-content" class="anim-fade">
-      ${activeTab === 'portfolio' ? renderTabPortfolio(alloc, returns, proj, p, fmt) : ''}
-      ${activeTab === 'growth'    ? renderTabGrowth(proj, returns, p, fmt) : ''}
-      ${activeTab === 'tips'      ? renderTabTips(recs, p, fmt) : ''}
-    </div>
-
-    <!-- CTA Footer -->
-    <div style="background:linear-gradient(135deg,var(--brand-600),#4338ca);border-radius:1.5rem;padding:2rem;text-align:center;color:#fff" class="anim-fade">
-      <div style="font-size:2rem;margin-bottom:.5rem">🎉</div>
-      <h3 style="font-size:1.25rem;font-weight:800;margin-bottom:.5rem">Great work, ${escHtml(p.name || 'Investor')}!</h3>
-      <p style="color:#c7d2fe;font-size:.9rem;margin-bottom:1.5rem">You now have a personalised investment roadmap. The best time to invest was yesterday — the second best time is today.</p>
-      <button id="res-restart2" style="background:#fff;color:var(--brand-700);font-weight:800;padding:.875rem 2rem;border-radius:.875rem;font-size:.95rem;transition:all .2s">🔄 Create Another Plan</button>
-    </div>
-
-    <p style="font-size:.7rem;color:#9ca3af;text-align:center;padding-bottom:2rem;line-height:1.5">
-      ⚠️ Investment Buddy is for educational purposes only. This is not financial advice. Always consult a qualified financial advisor before investing. Past returns do not guarantee future results.
-    </p>
-  </main>
-</div>`
-}
-
-function renderGauge(score, color) {
-  const angle  = -90 + (score/100)*180
-  const rad    = angle * Math.PI/180
-  const nx     = 100 + 70*Math.cos(rad)
-  const ny     = 100 + 70*Math.sin(rad)
-  return `
-  <div class="gauge-wrap" style="flex-shrink:0">
-    <svg viewBox="0 0 200 115" style="width:180px">
-      <path d="M10 100 A90 90 0 0 1 190 100" fill="none" stroke="#2d2f6e" stroke-width="18" stroke-linecap="round"/>
-      <path d="M10 100 A90 90 0 0 1 55 28"   fill="none" stroke="#22c55e" stroke-width="18" stroke-linecap="butt" opacity=".5"/>
-      <path d="M55 28 A90 90 0 0 1 100 10"   fill="none" stroke="#3b82f6" stroke-width="18" stroke-linecap="butt" opacity=".5"/>
-      <path d="M100 10 A90 90 0 0 1 145 28"  fill="none" stroke="#f97316" stroke-width="18" stroke-linecap="butt" opacity=".5"/>
-      <path d="M145 28 A90 90 0 0 1 190 100" fill="none" stroke="#ef4444" stroke-width="18" stroke-linecap="butt" opacity=".5"/>
-      <line x1="100" y1="100" x2="${nx.toFixed(1)}" y2="${ny.toFixed(1)}" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="100" cy="100" r="7" fill="${color}"/>
-      <text x="100" y="82" font-size="18" font-weight="900" fill="${color}" text-anchor="middle">${score}</text>
-      <text x="8"   y="113" font-size="8"  fill="rgba(255,255,255,.5)" text-anchor="middle">Safe</text>
-      <text x="192" y="113" font-size="8"  fill="rgba(255,255,255,.5)" text-anchor="middle">Risky</text>
-    </svg>
-    <p style="font-size:.7rem;color:rgba(255,255,255,.5);margin-top:-.25rem">Risk Score / 100</p>
-  </div>`
-}
-
-// ── Portfolio Tab ──
-function renderTabPortfolio(alloc, returns, proj, p, fmt) {
-  const total = alloc.reduce((s,a)=>s+a.pct,0)
-  return `
-<div class="space-y-5">
-  <!-- Donut + Legend -->
-  <div class="card">
-    <h2 class="font-bold text-lg" style="color:#1f2937;margin-bottom:.25rem">Asset Allocation</h2>
-    <p class="text-sm" style="color:#9ca3af;margin-bottom:1.5rem">Your recommended portfolio breakdown</p>
-    <div style="display:flex;flex-wrap:wrap;gap:1.5rem;align-items:center">
-      <!-- SVG Donut -->
-      <div style="flex-shrink:0;width:220px;height:220px;margin:0 auto">
-        ${renderDonut(alloc)}
-      </div>
-      <!-- Legend -->
-      <div style="flex:1;min-width:240px">
-        ${alloc.map(a=>`
-        <div class="alloc-row">
-          <div class="alloc-dot" style="background:${a.color}"></div>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;justify-content:space-between">
-              <span class="text-sm font-semibold truncate" style="color:#1f2937">${a.name}</span>
-              <span class="text-sm font-bold" style="color:${a.color};margin-left:.5rem">${a.pct}%</span>
-            </div>
-            <div style="margin-top:.2rem">
-              <div class="alloc-bar" style="background:${a.color};width:${a.pct}%;opacity:.3"></div>
-            </div>
-            <p class="text-xs" style="color:#9ca3af;margin-top:.15rem;line-height:1.3">${a.desc}</p>
-          </div>
-          <span class="risk-badge risk-${a.risk.toLowerCase()}">${a.risk}</span>
-        </div>`).join('')}
-      </div>
-    </div>
-  </div>
-
-  <!-- Return estimates -->
-  <div class="grid-3">
-    ${[
-      {l:'Conservative', v:`${returns.low}%`,  icon:'🛡️', col:'#3b82f6', bg:'#eff6ff'},
-      {l:'Expected',     v:`${returns.mid}%`,  icon:'🎯', col:'var(--brand-600)', bg:'var(--brand-50)'},
-      {l:'Optimistic',   v:`${returns.high}%`, icon:'🚀', col:'#16a34a', bg:'#f0fdf4'},
-    ].map(r=>`
-    <div style="background:${r.bg};border-radius:1.25rem;padding:1.25rem;text-align:center;border:1px solid rgba(0,0,0,.05)">
-      <div style="font-size:1.75rem;margin-bottom:.35rem">${r.icon}</div>
-      <div style="font-size:1.75rem;font-weight:900;color:${r.col}">${r.v}</div>
-      <div class="text-xs" style="color:#9ca3af">per year</div>
-      <div class="text-xs font-semibold" style="color:#374151;margin-top:.35rem">${r.l}</div>
-    </div>`).join('')}
-  </div>
-
-  <!-- Milestones bar chart -->
-  <div class="card">
-    <h2 class="font-bold text-lg" style="color:#1f2937;margin-bottom:.25rem">Growth Milestones</h2>
-    <p class="text-sm" style="color:#9ca3af;margin-bottom:1.5rem">
-      Based on <strong style="color:#374151">${fmt(p.monthlySavings||500)}/month</strong> at
-      <strong style="color:var(--brand-600)">${returns.mid}% average annual return</strong>
-    </p>
-    ${renderBarChart([
-      {label:'10 Years', val:proj.y10,      color:'#a5b4fc'},
-      {label:'20 Years', val:proj.y20,      color:'var(--brand-600)'},
-      {label:`${proj.horizon} Years`, val:proj.yHorizon, color:'#312e81'},
-    ], fmt)}
-    <div class="grid-3" style="margin-top:1.25rem">
-      ${[
-        {icon:'🌱', l:'10 Years',           v:proj.y10},
-        {icon:'🌳', l:'20 Years',           v:proj.y20},
-        {icon:'🏔️', l:`${proj.horizon} Yrs`,v:proj.yHorizon},
-      ].map(m=>`
-      <div style="text-align:center;background:#f8fafc;border-radius:1rem;padding:.875rem">
-        <div style="font-size:1.4rem;margin-bottom:.35rem">${m.icon}</div>
-        <div style="font-size:1.2rem;font-weight:900;color:#0f172a">${fmt(m.v)}</div>
-        <div class="text-xs" style="color:#9ca3af">${m.l}</div>
-      </div>`).join('')}
-    </div>
-  </div>
-</div>`
-}
-
-// ── Growth Tab ──
-function renderTabGrowth(proj, returns, p, fmt) {
-  const monthly = p.monthlySavings||500
-  const data30  = []
-  for(let y=0;y<=30;y+=5){
-    const m=y*12, r=returns.mid/100/12, lo=returns.low/100/12, hi=returns.high/100/12
-    const calc=(rate)=>rate===0?monthly*m:Math.round(monthly*((Math.pow(1+rate,m)-1)/rate))
-    data30.push({y:`${y}yr`, exp:calc(r), lo:calc(lo), hi:calc(hi)})
-  }
-  const doublingYears = Math.round(72/returns.mid)
-  const total30contrib = monthly*360
-
-  return `
-<div class="space-y-5">
-  <!-- Area chart -->
-  <div class="card">
-    <h2 class="font-bold text-lg" style="color:#1f2937;margin-bottom:.25rem">30-Year Growth Projection</h2>
-    <p class="text-sm" style="color:#9ca3af;margin-bottom:1.5rem">Three scenarios — ${fmt(monthly)}/month contributions</p>
-    ${renderAreaChart(data30, fmt)}
-    <div style="display:flex;gap:1.5rem;margin-top:.875rem;justify-content:center;flex-wrap:wrap">
-      ${[{c:'#22c55e',l:'Optimistic'},{c:'var(--brand-500)',l:'Expected'},{c:'#f97316',l:'Conservative'}].map(x=>`
-      <div style="display:flex;align-items:center;gap:.375rem;font-size:.8rem;color:#6b7280">
-        <div style="width:.625rem;height:.625rem;border-radius:9999px;background:${x.c}"></div>
-        ${x.l}
-      </div>`).join('')}
-    </div>
-    <p class="text-xs" style="color:#9ca3af;text-align:center;margin-top:.75rem">⚠️ Projections are illustrative. Actual returns will vary significantly.</p>
-  </div>
-
-  <!-- Compounding explainer -->
-  <div class="card" style="background:linear-gradient(135deg,var(--brand-50),#eef2ff);border-color:var(--brand-100)">
-    <div class="flex items-start gap-3">
-      <span style="font-size:1.75rem;flex-shrink:0">✨</span>
-      <div>
-        <h3 class="font-bold" style="color:var(--brand-800);margin-bottom:.5rem">The Power of Compounding</h3>
-        <p class="text-sm" style="color:#374151;line-height:1.6">
-          At ${fmt(monthly)}/month with <strong>${returns.mid}% returns</strong>, after 30 years your total
-          contributions would be <strong style="color:var(--brand-700)">${fmt(total30contrib)}</strong> —
-          but your projected portfolio could reach
-          <strong style="color:var(--brand-700)">${fmt(data30[data30.length-1]?.exp||0)}</strong>.
-          That extra ${fmt((data30[data30.length-1]?.exp||0) - total30contrib)} is pure compound interest — working silently for you every day.
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Key stats -->
-  <div class="grid-2">
-    <div class="card" style="text-align:center">
-      <div style="font-size:2rem;font-weight:900;color:var(--brand-600)">${returns.mid}%</div>
-      <div class="text-sm" style="color:#9ca3af;margin-top:.25rem">Expected annual return</div>
-      <div class="text-xs" style="color:#d1d5db">(historical avg)</div>
-    </div>
-    <div class="card" style="text-align:center">
-      <div style="font-size:2rem;font-weight:900;color:#16a34a">${doublingYears}yr</div>
-      <div class="text-sm" style="color:#9ca3af;margin-top:.25rem">To double your money</div>
-      <div class="text-xs" style="color:#d1d5db">Rule of 72</div>
-    </div>
-  </div>
-</div>`
-}
-
-// ── Tips Tab ──
-function renderTabTips(recs, p, fmt) {
-  const nextSteps = [
-    `Open or review your ${p.accountType==='roth_ira'?'Roth IRA':p.accountType==='401k'?'401(k)':p.accountType==='isa'?'ISA':'investment account'}`,
-    `Set up automatic monthly investment of ${fmt(p.monthlySavings||500)}`,
-    `Implement your ${state.result?.rInfo?.level||''} portfolio allocation`,
-    'Set a calendar reminder to rebalance quarterly',
-    'Build or verify your 3-6 month emergency fund first',
-    'Consult a CFP (Certified Financial Planner) for personalised advice',
-  ]
-  return `
-<div class="space-y-5">
-  <div class="card" style="background:linear-gradient(135deg,var(--brand-50),#eef2ff);border-color:var(--brand-100)">
-    <div class="flex items-start gap-3">
-      <span style="font-size:1.5rem;flex-shrink:0">🎯</span>
-      <div>
-        <h3 class="font-bold" style="color:var(--brand-800)">Your Personalised Strategy</h3>
-        <p class="text-sm" style="color:#374151;margin-top:.25rem">
-          Based on your profile as a <strong>${p.generation}</strong> investor
-          with a <strong>${state.result?.rInfo?.level||''}</strong> risk tolerance:
-        </p>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid-2">
-    ${(recs||[]).map(r=>`
-    <div class="card" style="transition:box-shadow .15s">
-      <div class="flex items-start gap-3">
-        <span style="font-size:1.75rem;flex-shrink:0">${r.icon}</span>
-        <div>
-          <h3 class="font-bold text-sm" style="color:#1f2937;margin-bottom:.375rem">${r.title}</h3>
-          <p class="text-xs" style="color:#6b7280;line-height:1.5">${r.desc}</p>
+      <div class="card">
+        <div class="card-title">📈 Growth Predictions</div>
+        <div class="card-sub">
+          Projected value each year and over 5 years, per category and in total. Each category grows at the
+          average expected return of its products in the dataset, compounded annually.
         </div>
+        ${renderGrowthTable(rec)}
       </div>
-    </div>`).join('')}
-  </div>
 
-  <!-- Next Steps checklist -->
-  <div class="card">
-    <h3 class="font-bold" style="color:#1f2937;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
-      <span>✅</span> Your Next Steps
-    </h3>
-    <ul class="step-list">
-      ${nextSteps.map((s,i)=>`
-      <li>
-        <span class="step-num">${i+1}</span>
-        ${s}
-      </li>`).join('')}
-    </ul>
-  </div>
-</div>`
+      <div class="card">
+        <div class="card-title">💡 Understanding Your Plan</div>
+        ${renderExplanations(rec, c)}
+      </div>
+    </div>
+  `;
+
+  // Wire controls
+  document.getElementById('customer-select').value = c.customerID;
+  document.getElementById('risk-select').onchange = e=>{ currentRisk=e.target.value; renderApp(); };
+  document.getElementById('amount-input').onchange = e=>{
+    const v=parseFloat(e.target.value)||0; currentCustomer.investableAmount=v; renderApp();
+  };
+  document.getElementById('save-btn').onclick = ()=>saveRecommendation(rec);
+  document.getElementById('download-btn').onclick = ()=>downloadRecommendation(rec);
 }
 
-// ── SVG Donut ──
-function renderDonut(alloc) {
-  const cx=110, cy=110, r=90, ir=50
-  const circ = 2*Math.PI*r
-  let offset = 0
-  const slices = alloc.map(a=>{
-    const dash = (a.pct/100)*circ
-    const gap  = circ - dash
-    const s    = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${a.color}" stroke-width="${r-ir}" stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${-offset.toFixed(2)}" transform="rotate(-90 ${cx} ${cy})"/>`
-    offset += dash
-    return s
-  })
-  const top2 = [...alloc].sort((a,b)=>b.pct-a.pct).slice(0,1)[0]
-  return `<svg viewBox="0 0 220 220" style="width:100%;height:100%">
-    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="${r-ir}"/>
+// ── SVG donut ──
+function renderDonut(rows){
+  const cx=90, cy=90, R=72, IR=44, circ=2*Math.PI*R, sw=R-IR;
+  let offset=0;
+  const slices=rows.filter(s=>s.pct>0).map(s=>{
+    const dash=(s.pct/100)*circ, gap=circ-dash;
+    const seg=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="${s.color}" stroke-width="${sw}"
+       stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}"
+       transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset+=dash; return seg;
+  });
+  const nCats=rows.filter(s=>s.pct>0).length;
+  return `<svg viewBox="0 0 180 180" width="180" height="180">
+    <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="#f1f5f9" stroke-width="${sw}"/>
     ${slices.join('')}
-    <text x="${cx}" y="${cy-8}"  text-anchor="middle" font-size="11" fill="#9ca3af" font-weight="500">largest</text>
-    <text x="${cx}" y="${cy+8}"  text-anchor="middle" font-size="15" fill="${top2?.color||'#6366f1'}" font-weight="900">${top2?.pct||0}%</text>
-    <text x="${cx}" y="${cy+22}" text-anchor="middle" font-size="9"  fill="#9ca3af">${top2?.name?.split(' ').slice(0,2).join(' ')||''}</text>
-  </svg>`
+    <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="600">Portfolio</text>
+    <text x="${cx}" y="${cy+13}" text-anchor="middle" font-size="13" fill="#334155" font-weight="800">${nCats} categories</text>
+  </svg>`;
 }
 
-// ── Bar Chart ──
-function renderBarChart(data, fmt) {
-  const max  = Math.max(...data.map(d=>d.val))
-  const h    = 180
-  return `
-<div style="display:flex;align-items:flex-end;gap:1rem;height:${h+40}px;padding:.5rem 0">
-  ${data.map(d=>{
-    const barH = Math.max(12, Math.round((d.val/max)*h))
-    return `
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:.375rem">
-    <span style="font-size:.75rem;font-weight:700;color:#374151">${fmt(d.val)}</span>
-    <div style="width:100%;height:${barH}px;border-radius:.5rem .5rem 0 0;background:${d.color};transition:height .6s ease;min-width:28px"></div>
-    <span style="font-size:.7rem;font-weight:600;color:#9ca3af;text-align:center">${d.label}</span>
-  </div>`}).join('')}
-</div>`
+// ── Growth table ──
+function renderGrowthTable(rec){
+  const rows=rec.rows;
+  return `<div class="tbl-scroll"><table class="tbl">
+    <thead><tr>
+      <th>Category</th><th class="num">Invested</th><th class="num">Return %</th>
+      <th class="num">Yr 1</th><th class="num">Yr 2</th><th class="num">Yr 3</th><th class="num">Yr 4</th><th class="num">Yr 5</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(r=>`
+        <tr>
+          <td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${r.color};margin-right:6px"></span>${r.label}</td>
+          <td class="num">${fmtMoney(r.amount)}</td>
+          <td class="num">${r.avgReturn.toFixed(2)}%</td>
+          ${rec.projection.map(p=>`<td class="num">${fmtMoney(p.perBucket[r.bucket])}</td>`).join('')}
+        </tr>`).join('')}
+      <tr class="total-row">
+        <td>Total portfolio</td>
+        <td class="num">${fmtMoney(rec.amount)}</td>
+        <td class="num">${rec.blendedReturn.toFixed(2)}%</td>
+        ${rec.projection.map(p=>`<td class="num">${fmtMoney(p.total)}</td>`).join('')}
+      </tr>
+      <tr>
+        <td class="muted" style="font-style:italic">Cumulative gain</td>
+        <td></td><td></td>
+        ${rec.projection.map(p=>`<td class="num" style="color:#15803d;font-weight:700">+${fmtMoney(p.gain)}</td>`).join('')}
+      </tr>
+    </tbody>
+  </table></div>
+  <div class="notice mt-2">
+    Over 5 years this portfolio is projected to grow from <strong>${fmtMoney(rec.amount)}</strong>
+    to <strong>${fmtMoney(rec.projection[4].total)}</strong> — a total gain of
+    <strong>${fmtMoney(rec.projection[4].gain)}</strong> at a blended
+    <strong>${rec.blendedReturn.toFixed(2)}%</strong> average annual return.
+  </div>`;
 }
 
-// ── Area Chart (pure SVG) ──
-function renderAreaChart(data, fmt) {
-  const W=600, H=200, PAD_L=60, PAD_B=30, PAD_T=10
-  const iW = W-PAD_L-10, iH = H-PAD_B-PAD_T
-  const maxV = Math.max(...data.map(d=>d.hi))
-
-  function scaleX(i){ return PAD_L + (i/(data.length-1))*iW }
-  function scaleY(v){ return PAD_T + iH - (v/maxV)*iH }
-
-  function polyline(key, stroke, fill){
-    const pts = data.map((d,i)=>`${scaleX(i).toFixed(1)},${scaleY(d[key]).toFixed(1)}`).join(' ')
-    const areaPts = data.map((d,i)=>`${scaleX(i).toFixed(1)},${scaleY(d[key]).toFixed(1)}`).join(' ')
-      + ` ${scaleX(data.length-1).toFixed(1)},${(PAD_T+iH).toFixed(1)} ${scaleX(0).toFixed(1)},${(PAD_T+iH).toFixed(1)}`
-    return `
-    <polygon points="${areaPts}" fill="${fill}" opacity=".18"/>
-    <polyline points="${pts}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`
-  }
-
-  const yLines = 4
-  let yLabels = '', gridLines = ''
-  for(let i=0;i<=yLines;i++){
-    const v = (maxV/yLines)*i
-    const y = scaleY(v)
-    yLabels  += `<text x="${PAD_L-6}" y="${y.toFixed(1)}" text-anchor="end" font-size="9" fill="#9ca3af" dominant-baseline="middle">${fmt(v)}</text>`
-    gridLines+= `<line x1="${PAD_L}" y1="${y.toFixed(1)}" x2="${W-10}" y2="${y.toFixed(1)}" stroke="#f1f5f9" stroke-width="1"/>`
-  }
-
-  const xLabels = data.map((d,i)=>`<text x="${scaleX(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="9" fill="#9ca3af">${d.y}</text>`).join('')
+// ── Explanations ──
+function renderExplanations(rec, c){
+  // Identify the single highest-returning product in the dataset for the contrast.
+  const topProduct = [...PRODUCTS].sort((a,b)=>parseFloat(b.expectedReturnPercentage)-parseFloat(a.expectedReturnPercentage))[0];
+  const fixedRows = rec.rows.filter(r=>r.isFixed && r.amount>0);
+  const fixedExample = fixedRows[0];
 
   return `
-<div style="overflow-x:auto">
-<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-height:240px">
-  ${gridLines}
-  ${polyline('hi',  '#22c55e', '#22c55e')}
-  ${polyline('exp', '#6366f1', '#6366f1')}
-  ${polyline('lo',  '#f97316', '#f97316')}
-  ${yLabels}
-  ${xLabels}
-</svg>
-</div>`
+  <div class="explain">
+    <h4>🧩 Why a portfolio is safer than a single fund</h4>
+    <p>
+      Instead of placing all of ${c.firstName}'s money into one product, this plan spreads it across
+      <strong>${rec.rows.filter(r=>r.pct>0).length} categories</strong> and many underlying products.
+      The dataset's riskiest single product (<em>${topProduct.productName}</em>) targets
+      <strong>${parseFloat(topProduct.expectedReturnPercentage).toFixed(1)}%</strong> a year, but carries a
+      risk score of <strong>${topProduct.riskScore}/10</strong> — meaning its value can swing sharply.
+      If that one product falls, everything falls with it. In this portfolio, safer categories
+      (Savings, Fixed Deposits, Policies) hold <strong>${(rec.rows.filter(r=>r.isFixed).reduce((s,r)=>s+r.pct,0))}%</strong>
+      of the money and cushion the ups and downs of the growth Funds. The result is a smoother, more
+      predictable <strong>${rec.blendedReturn.toFixed(2)}%</strong> blended return — the risk is shared and
+      calculated rather than concentrated in one place.
+    </p>
+  </div>
+  <div class="explain">
+    <h4>🏦 How interest builds on fixed-interest products</h4>
+    <p>
+      ${fixedExample ? `
+      Fixed-interest categories such as <strong>${fixedExample.label}</strong> pay a set rate each year —
+      here about <strong>${fixedExample.avgReturn.toFixed(2)}%</strong>. On the
+      <strong>${fmtMoney(fixedExample.amount)}</strong> allocated to it, that is roughly
+      <strong>${fmtMoney(fixedExample.amount*fixedExample.avgReturn/100)}</strong> in year one.
+      Because the interest is added to the balance, the next year earns interest on the larger amount —
+      this is <strong>compounding</strong>. Over 5 years the fixed-interest portion of this plan is projected
+      to grow steadily and with very little uncertainty, which is why it anchors the portfolio.`
+      : `This plan currently holds no fixed-interest products at the selected risk level. Choosing a lower
+      risk level would introduce Savings, Fixed Deposits and Policies, which pay a set rate of interest each
+      year and compound steadily with very little uncertainty.`}
+    </p>
+  </div>`;
 }
 
-function bindResults() {
-  document.getElementById('res-restart')?.addEventListener('click', ()=>setState({screen:'landing',step:0,profile:{},errors:{},result:null}))
-  document.getElementById('res-restart2')?.addEventListener('click', ()=>setState({screen:'landing',step:0,profile:{},errors:{},result:null}))
-  document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{
-    activeTab=b.dataset.tab
-    render()
-  }))
+// ═══════════════════════════ PERSISTENCE ═══════════════════════════
+function recordObject(rec){
+  const c=currentCustomer;
+  return {
+    savedAt: new Date().toISOString(),
+    customerID:c.customerID, firstName:c.firstName, lastName:c.lastName,
+    dateOfBirth:c.dateOfBirth, city:c.city, country:c.country,
+    statedRiskAppetite:c.riskAppetite, accountBehaviour:c.accountBehaviour,
+    behaviourAdjustedRisk:baseRisk, chosenRiskLevel:rec.riskLevel,
+    investableAmount:rec.amount, blendedAnnualReturnPct:+rec.blendedReturn.toFixed(4),
+    allocation:rec.rows.map(r=>({category:r.label,percent:r.pct,amount:Math.round(r.amount),avgReturnPct:+r.avgReturn.toFixed(2)})),
+    projection5yr:rec.projection.map(p=>({year:p.year,totalValue:Math.round(p.total),cumulativeGain:Math.round(p.gain)}))
+  };
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+function saveRecommendation(rec){
+  const obj=recordObject(rec);
+  const key='investmentBuddy.portfolios';
+  const store=JSON.parse(localStorage.getItem(key)||'[]');
+  // one active record per customer — replace prior
+  const filtered=store.filter(r=>r.customerID!==obj.customerID);
+  filtered.push(obj);
+  localStorage.setItem(key, JSON.stringify(filtered,null,2));
+  showToast(`✅ Saved recommendation for ${obj.firstName} ${obj.lastName}`);
 }
 
-// ─── Boot ────────────────────────────────────────────────────────
-render()
+function downloadRecommendation(rec){
+  const obj=recordObject(rec);
+  // Download the full stored dataset (all saved customers) plus this one merged in.
+  const key='investmentBuddy.portfolios';
+  const store=JSON.parse(localStorage.getItem(key)||'[]');
+  const filtered=store.filter(r=>r.customerID!==obj.customerID);
+  filtered.push(obj);
+  const blob=new Blob([JSON.stringify(filtered,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='customer_portfolios.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('⬇️ Downloaded customer_portfolios.json');
+}
+
+function showToast(msg){
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2600);
+}
+
+// ═══════════════════════════ BOOT ═══════════════════════════
+(async function(){
+  await loadData();
+  renderCustomerSelect();
+  selectCustomer(CUSTOMERS[0].customerID);
+})();
 </script>
 </body>
 </html>
