@@ -86,7 +86,9 @@ input,select{font-family:inherit}
 .alloc-body{flex:1;min-width:0}
 .alloc-line{display:flex;align-items:center;gap:.75rem}
 .alloc-line .alloc-name{flex:1}
-.alloc-types{font-size:.72rem;color:#94a3b8;margin-top:.15rem;line-height:1.35}
+.alloc-types{font-size:.72rem;color:#94a3b8;margin-top:.15rem;line-height:1.35;font-weight:600}
+.alloc-names{list-style:none;margin:.3rem 0 0;padding:0;display:flex;flex-wrap:wrap;gap:.3rem}
+.alloc-names li{font-size:.72rem;color:#475569;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:.4rem;padding:.12rem .5rem;line-height:1.3}
 .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:800;padding:.25rem .7rem;border-radius:999px}
 .badge-low{background:#dcfce7;color:#15803d}
 .badge-lowmed{background:#d1fae5;color:#047857}
@@ -418,7 +420,7 @@ function buildRecommendation(customer, products, riskLevel){
     return {
       band, label:band, color:RISK_BAND_COLOR[band],
       pct, amount:amount*pct/100, avgReturn,
-      types:typesByBand[band], productCount:list.length
+      types:typesByBand[band], names:list.map(p=>p.productName), productCount:list.length
     };
   });
 
@@ -466,7 +468,8 @@ function buildBlendedMix(customer, products, centerLevel){
   const bands = RISK_LEVELS.map((lvl,i)=>({
     level:lvl, pct:pcts[i], amount:amount*pcts[i]/100,
     avgReturn:bandReturn[i], color:RISK_BAND_COLOR[lvl],
-    productCount:products.filter(p=>p.productRisk===lvl).length
+    productCount:products.filter(p=>p.productRisk===lvl).length,
+    names:products.filter(p=>p.productRisk===lvl).map(p=>p.productName)
   }));
 
   const blendedReturn = bands.reduce((s,b)=>s + (b.pct/100)*b.avgReturn, 0);
@@ -608,7 +611,7 @@ function renderApp(){
           <div class="card-title">📊 Your Suggested Portfolio — ${currentRisk} risk</div>
           <div class="card-sub">
             How your ${fmtMoney(rec.amount)} is spread across the <strong>risk types</strong> in our product range.
-            Each slice is a risk category, made up of the product types shown beside it.
+            Each slice is a risk category, made up of the products listed beside it.
           </div>
           <div class="flex gap-3 wrap center">
             <div style="flex-shrink:0">${renderRiskPie(rec.riskRows, 'Portfolio')}</div>
@@ -622,7 +625,8 @@ function renderApp(){
                       <span class="alloc-pct" style="color:${r.color}">${r.pct}%</span>
                       <span class="alloc-amt">${fmtMoney(r.amount)}</span>
                     </div>
-                    <div class="alloc-types">${r.types.join(' · ')}</div>
+                    <div class="alloc-types">${r.productCount} products · ${r.avgReturn.toFixed(1)}% avg/yr</div>
+                    <ul class="alloc-names">${r.names.map(n=>`<li>${n}</li>`).join('')}</ul>
                   </div>
                 </div>`).join('')}
               <div class="alloc-item" style="border-top:2px solid #cbd5e1;margin-top:.3rem;padding-top:.6rem">
@@ -741,7 +745,8 @@ function renderBlendedMixPie(mix, c){
            <span class="alloc-pct" style="color:${b.color}">${b.pct}%</span>
            <span class="alloc-amt">${fmtMoney(b.amount)}</span>
          </div>
-         <div class="alloc-types">avg ${b.avgReturn.toFixed(1)}% a year · ${b.productCount} products</div>
+         <div class="alloc-types">${b.productCount} products · avg ${b.avgReturn.toFixed(1)}% a year</div>
+         <ul class="alloc-names">${b.names.map(n=>`<li>${n}</li>`).join('')}</ul>
        </div>
      </div>`
   ).join('');
