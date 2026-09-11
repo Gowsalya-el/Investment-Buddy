@@ -85,6 +85,40 @@ input,select{font-family:inherit}
 .disclaimer{font-size:.72rem;color:#94a3b8;text-align:center;padding:2rem 1rem;line-height:1.6}
 .flex{display:flex}.between{justify-content:space-between}.center{align-items:center}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.wrap{flex-wrap:wrap}
 .mt-2{margin-top:1rem}
+
+/* ── Landing ── */
+.landing{padding:.5rem 0 1rem}
+.landing-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:2rem;align-items:center;background:linear-gradient(135deg,var(--boi-navy),var(--brand-600));color:#fff;border-radius:1.25rem;padding:2.5rem;box-shadow:0 10px 30px rgba(15,30,70,.25)}
+@media(max-width:760px){.landing-hero{grid-template-columns:1fr;padding:1.75rem}}
+.landing-badge{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:.3rem .8rem;border-radius:999px}
+.landing-hero-text h1{font-size:2.3rem;font-weight:900;line-height:1.1;margin:1rem 0}
+@media(max-width:760px){.landing-hero-text h1{font-size:1.8rem}}
+.landing-hero-text .hl{color:var(--boi-green)}
+.landing-hero-text p{font-size:1rem;opacity:.9;line-height:1.6;max-width:44ch}
+.landing-cta{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.5rem}
+.landing-cta .btn-ghost{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.35);color:#fff}
+.landing-cta .btn-ghost:hover{background:rgba(255,255,255,.16);color:#fff}
+.landing-note{font-size:.75rem;opacity:.75;margin-top:1rem}
+/* Hero mock card */
+.landing-hero-card{background:linear-gradient(135deg,#1b3a6b,#0f1e46);border:1px solid rgba(255,255,255,.15);border-radius:1rem;padding:1.4rem;box-shadow:0 12px 28px rgba(0,0,0,.3)}
+.hc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.hc-chip{width:38px;height:28px;border-radius:6px;background:linear-gradient(135deg,#e9c46a,#d4a72c);display:inline-block}
+.hc-brand{font-weight:900;color:#fff;font-size:1.1rem}
+.hc-balance-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;opacity:.7}
+.hc-balance{font-size:1.8rem;font-weight:900;margin:.15rem 0 1rem}
+.hc-row{display:flex;justify-content:space-between;font-size:.82rem;opacity:.9;padding:.35rem 0;border-top:1px solid rgba(255,255,255,.12)}
+.hc-cardno{margin-top:1rem;letter-spacing:.18em;font-size:.9rem;opacity:.85}
+/* Features */
+.landing-features{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.5rem}
+@media(max-width:760px){.landing-features{grid-template-columns:1fr}}
+.feature{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1.4rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.feature-icon{font-size:1.8rem}
+.feature-title{font-weight:800;color:#1e293b;margin-top:.5rem}
+.feature-desc{font-size:.86rem;color:#64748b;margin-top:.35rem;line-height:1.55}
+/* Strip */
+.landing-strip{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;background:linear-gradient(135deg,#eef3f8,#e8f5e0);border:1px solid #c7d2fe;border-left:4px solid var(--boi-green);border-radius:1rem;padding:1.5rem;margin-top:1.5rem}
+.landing-strip h3{font-size:1.15rem;font-weight:800;color:var(--brand-700)}
+.landing-strip p{font-size:.88rem;color:#475569;margin-top:.25rem}
 </style>
 </head>
 <body>
@@ -150,6 +184,7 @@ function parseCSV(text){
 
 let CUSTOMERS=[];
 let currentUser=null;
+let view='landing';   // landing | login | (dashboard when currentUser set)
 
 async function loadData(){
   let csv=null;
@@ -234,16 +269,79 @@ function renderTopbar(){
   if(currentUser){
     el.innerHTML = `<span class="link-btn">${currentUser.firstName} ${currentUser.lastName}</span>
       <button class="link-btn" id="logout-btn">Log out</button>`;
-    document.getElementById('logout-btn').onclick=()=>{ currentUser=null; render(); };
+    document.getElementById('logout-btn').onclick=()=>{ currentUser=null; view='landing'; render(); };
+  } else if(view==='login'){
+    el.innerHTML = `<button class="link-btn" id="back-home-btn">← Home</button>`;
+    document.getElementById('back-home-btn').onclick=()=>{ view='landing'; render(); };
   } else {
-    el.innerHTML = '';
+    el.innerHTML = `<button class="link-btn" id="header-login-btn">Log in</button>`;
+    document.getElementById('header-login-btn').onclick=()=>{ view='login'; render(); };
   }
 }
 
 function render(){
   renderTopbar();
-  document.getElementById('page').innerHTML = currentUser ? dashboardHTML() : loginHTML();
-  if(currentUser) wireDashboard(); else wireLogin();
+  const el=document.getElementById('page');
+  if(currentUser){ el.innerHTML=dashboardHTML(); wireDashboard(); }
+  else if(view==='login'){ el.innerHTML=loginHTML(); wireLogin(); }
+  else { el.innerHTML=landingHTML(); wireLanding(); }
+}
+
+// ── Landing ──
+function landingHTML(){
+  return `
+  <section class="landing anim-fade">
+    <div class="landing-hero">
+      <div class="landing-hero-text">
+        <span class="landing-badge">Bank of Ireland · Online Banking</span>
+        <h1>Banking that works<br><span class="hl">for your future</span></h1>
+        <p>View your balance, track your spending, and grow your money with a personalised
+           investment plan — all in one place. Secure, simple and built around you.</p>
+        <div class="landing-cta">
+          <button class="btn btn-accent" id="landing-login-btn" style="width:auto">🔒 Log in to your account</button>
+          <a class="btn btn-ghost" href="#features" style="width:auto">Explore features</a>
+        </div>
+        <div class="landing-note">Demo experience · use any customer with PIN <strong>${DEMO_PIN}</strong></div>
+      </div>
+      <div class="landing-hero-card">
+        <div class="hc-top">
+          <span class="hc-chip"></span>
+          <span class="hc-brand">BOI</span>
+        </div>
+        <div class="hc-balance-lbl">Total balance</div>
+        <div class="hc-balance">€ 24,318.90</div>
+        <div class="hc-row"><span>Current Account</span><span>€ 6,401.44</span></div>
+        <div class="hc-row"><span>Savings</span><span>€ 17,917.46</span></div>
+        <div class="hc-cardno">•••• •••• •••• 4021</div>
+      </div>
+    </div>
+
+    <div id="features" class="landing-features">
+      ${[
+        {icon:'💳', t:'Everyday banking', d:'Check balances and review recent transactions across your current and savings accounts.'},
+        {icon:'📈', t:'Investment Buddy', d:'Get a personalised, risk-based investment plan with 5-year growth predictions.'},
+        {icon:'🔒', t:'Secure by design', d:'Log in safely — your details flow straight into Investment Buddy, nothing to re-enter.'},
+      ].map(f=>`
+        <div class="feature">
+          <div class="feature-icon">${f.icon}</div>
+          <div class="feature-title">${f.t}</div>
+          <div class="feature-desc">${f.d}</div>
+        </div>`).join('')}
+    </div>
+
+    <div class="landing-strip">
+      <div>
+        <h3>Ready to see your money grow?</h3>
+        <p>Log in to view your accounts and launch Investment Buddy with your details pre-loaded.</p>
+      </div>
+      <button class="btn btn-accent" id="landing-login-btn2" style="width:auto">Get started →</button>
+    </div>
+  </section>`;
+}
+function wireLanding(){
+  const go=()=>{ view='login'; render(); };
+  const a=document.getElementById('landing-login-btn'); if(a) a.onclick=go;
+  const b=document.getElementById('landing-login-btn2'); if(b) b.onclick=go;
 }
 
 // ── Login ──
