@@ -33,8 +33,11 @@ input,select{font-family:inherit}
 .app-header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,var(--boi-navy),var(--brand-600));color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);border-bottom:3px solid var(--boi-green)}
 .app-header-inner{max-width:1100px;margin:0 auto;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
 .container{max-width:1100px;margin:0 auto;padding:1.5rem}
-.grid-main{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start}
-@media(max-width:860px){.grid-main{grid-template-columns:1fr}}
+/* Profile spans full width on top; below it a two-column work area */
+.grid-work{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start;margin-top:1.25rem}
+@media(max-width:860px){.grid-work{grid-template-columns:1fr}}
+.col-left>.card+.card{margin-top:1.25rem}
+.col-right>.card+.card{margin-top:1.25rem}
 
 /* Cards */
 .card{background:#fff;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
@@ -53,6 +56,11 @@ input,select{font-family:inherit}
 .profile-row:last-child{border-bottom:none}
 .profile-key{color:#64748b;font-weight:500}
 .profile-val{color:#1e293b;font-weight:700;text-align:right}
+/* Full-width profile grid (top of page) */
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.4rem 1.5rem}
+.profile-cell{display:flex;justify-content:space-between;align-items:center;gap:.75rem;padding:.5rem 0;border-bottom:1px solid #f1f5f9;font-size:.88rem}
+.profile-cell .profile-key{white-space:nowrap}
+.profile-cell .profile-val{text-align:right}
 .badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.75rem;font-weight:800;padding:.25rem .7rem;border-radius:999px}
 .badge-low{background:#dcfce7;color:#15803d}
 .badge-lowmed{background:#d1fae5;color:#047857}
@@ -76,6 +84,24 @@ input,select{font-family:inherit}
 .tbl .num{text-align:right;font-variant-numeric:tabular-nums}
 .tbl .total-row td{font-weight:800;color:#1e293b;border-top:2px solid #cbd5e1;background:#f8fafc}
 .tbl-scroll{overflow-x:auto}
+
+/* Charts */
+.chart-wrap{width:100%;overflow-x:auto}
+.chart-legend{display:flex;flex-wrap:wrap;gap:1rem;margin-top:.75rem;justify-content:center}
+.legend-item{display:flex;align-items:center;gap:.4rem;font-size:.8rem;color:#475569;font-weight:600}
+.legend-swatch{width:14px;height:4px;border-radius:2px}
+.legend-swatch.dot{width:12px;height:12px;border-radius:3px}
+details.detail-toggle{margin-top:1rem}
+details.detail-toggle>summary{cursor:pointer;font-size:.82rem;font-weight:700;color:var(--brand-600);list-style:none;padding:.4rem 0}
+details.detail-toggle>summary::-webkit-details-marker{display:none}
+details.detail-toggle>summary::before{content:'▸ ';color:var(--brand-400)}
+details.detail-toggle[open]>summary::before{content:'▾ '}
+
+/* Risk-mix horizontal bar */
+.mix-bar{display:flex;height:34px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}
+.mix-seg{display:flex;align-items:center;justify-content:center;color:#fff;font-size:.72rem;font-weight:800;min-width:0}
+.mix-key{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.75rem}
+.mix-key-item{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:#475569;font-weight:600}
 
 /* Buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;padding:.7rem 1.3rem;border-radius:.7rem;font-size:.9rem;transition:all .18s}
@@ -131,7 +157,7 @@ input,select{font-family:inherit}
 
 <div class="container">
   <div id="load-status" class="notice mt-1 hidden"></div>
-  <div id="app-body" class="grid-main"></div>
+  <div id="app-body"></div>
 </div>
 
 <div class="disclaimer">
@@ -244,6 +270,10 @@ const BUCKET_COLOR = {
   'Policies':'#3a5e8c',         // BOI mid-blue
   'Funds':'#0f1e46'             // BOI dark navy
 };
+// Colours for the 5 risk bands (safe green → deeper navy for higher risk).
+const RISK_BAND_COLOR = {
+  'Low':'#6cc24a','Low-Medium':'#4e9e2f','Medium':'#3a5e8c','Medium-High':'#1b3a6b','High':'#0f1e46'
+};
 function bucketOf(product){
   return BUCKET_OF_TYPE[product.productType] || 'Funds';
 }
@@ -332,6 +362,45 @@ function buildRecommendation(customer, products, riskLevel){
   return { riskLevel, amount, alloc, rows, blendedReturn, projection };
 }
 
+// Build a "balanced mix of ALL risk types", weighted around the customer's appetite.
+// Produces a % exposure to each of the 5 risk bands, plus a blended expected return
+// (using each band's average product return from the dataset only).
+function buildBlendedMix(customer, products, centerLevel){
+  const amount = parseFloat(customer.investableAmount||0) || 0;
+  const centerIdx = RISK_LEVELS.indexOf(centerLevel);
+  const center = centerIdx<0 ? 2 : centerIdx;
+
+  // Bell-shaped weights around the customer's level (nearer bands get more money).
+  // weight = base^distance, then normalised to 100%.
+  const raw = RISK_LEVELS.map((lvl,i)=>{
+    const dist=Math.abs(i-center);
+    return Math.pow(0.45, dist);        // 1, 0.45, 0.2, 0.09, ...
+  });
+  const sum = raw.reduce((s,w)=>s+w,0);
+  let pcts = raw.map(w=>Math.round(w/sum*100));
+  // fix rounding to exactly 100
+  let drift = 100 - pcts.reduce((s,p)=>s+p,0);
+  pcts[center]+=drift;
+
+  // Average expected return of the products in each risk band (dataset-driven).
+  const bandReturn = RISK_LEVELS.map(lvl=>{
+    const list=products.filter(p=>p.productRisk===lvl);
+    if(!list.length) return 0;
+    return list.reduce((s,p)=>s+parseFloat(p.expectedReturnPercentage||0),0)/list.length;
+  });
+
+  const bands = RISK_LEVELS.map((lvl,i)=>({
+    level:lvl, pct:pcts[i], amount:amount*pcts[i]/100,
+    avgReturn:bandReturn[i], color:RISK_BAND_COLOR[lvl],
+    productCount:products.filter(p=>p.productRisk===lvl).length
+  }));
+
+  const blendedReturn = bands.reduce((s,b)=>s + (b.pct/100)*b.avgReturn, 0);
+  const value5 = amount * Math.pow(1+blendedReturn/100, 5);
+
+  return { center:centerLevel, amount, bands, blendedReturn, value5 };
+}
+
 // ═══════════════════════════ STATE ═══════════════════════════
 let PRODUCTS=[], CUSTOMERS=[];
 let currentCustomer=null;
@@ -392,81 +461,101 @@ function renderApp(){
   const rec=buildRecommendation(c, PRODUCTS, currentRisk);
   const age=ageFromDOB(c.dateOfBirth);
 
+  const blendedMix = buildBlendedMix(c, PRODUCTS, currentRisk);
+
   document.getElementById('app-body').innerHTML = `
-    <!-- LEFT: profile + controls -->
-    <div>
-      <div class="card anim-slide">
-        <div class="card-title">👤 Customer Profile</div>
-        <div class="card-sub">Recommendation is based on this customer's behaviour, risk tolerance and demographic.</div>
-        <div class="profile-row"><span class="profile-key">Customer ID</span><span class="profile-val">#${c.customerID}</span></div>
-        <div class="profile-row"><span class="profile-key">Name</span><span class="profile-val">${c.firstName} ${c.lastName}</span></div>
-        <div class="profile-row"><span class="profile-key">Age</span><span class="profile-val">${age!==null?age+' yrs':'—'}</span></div>
-        <div class="profile-row"><span class="profile-key">Location</span><span class="profile-val">${c.city}, ${c.country}</span></div>
-        <div class="profile-row"><span class="profile-key">Stated risk appetite</span><span class="profile-val"><span class="badge ${riskBadgeClass(c.riskAppetite)}">${c.riskAppetite}</span></span></div>
-        <div class="profile-row"><span class="profile-key">Account behaviour</span><span class="profile-val">${c.accountBehaviour}</span></div>
-        <div class="profile-row"><span class="profile-key">Behaviour-adjusted risk</span><span class="profile-val"><span class="badge ${riskBadgeClass(baseRisk)}">${baseRisk}</span></span></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">💶 Amount to Invest (EUR)</div>
-        <div class="card-sub">Shown in euro (€). From the dataset — editable for this session.</div>
-        <input id="amount-input" class="input-field" type="number" min="0" step="500" value="${rec.amount}">
-      </div>
-
-      <div class="card">
-        <div class="card-title">🎚️ Adjust Risk Level</div>
-        <div class="card-sub">Change the risk to preview a different portfolio. Starting point is the behaviour-adjusted risk (${baseRisk}).</div>
-        <select id="risk-select" class="select-field">
-          ${RISK_LEVELS.map(r=>`<option value="${r}" ${r===currentRisk?'selected':''}>${r}${r===baseRisk?'  (recommended)':''}</option>`).join('')}
-        </select>
-        <div class="stat-grid mt-2">
-          <div class="stat"><div class="stat-val">${rec.blendedReturn.toFixed(2)}%</div><div class="stat-lbl">Blended annual return</div></div>
-          <div class="stat"><div class="stat-val">${fmtMoney(rec.projection[4].total)}</div><div class="stat-lbl">Projected value (5 yrs)</div></div>
-        </div>
-        <div class="flex gap-2 wrap mt-2">
-          <button id="save-btn" class="btn btn-accent">💾 Save Recommendation</button>
-          <button id="download-btn" class="btn btn-ghost">⬇️ Download JSON</button>
-        </div>
+    <!-- CUSTOMER PROFILE — full width, top of page -->
+    <div class="card anim-slide">
+      <div class="card-title">👤 Customer Profile</div>
+      <div class="card-sub">Your recommendation is built from your behaviour, risk tolerance and demographic details below.</div>
+      <div class="profile-grid">
+        <div class="profile-cell"><span class="profile-key">Customer ID</span><span class="profile-val">#${c.customerID}</span></div>
+        <div class="profile-cell"><span class="profile-key">Name</span><span class="profile-val">${c.firstName} ${c.lastName}</span></div>
+        <div class="profile-cell"><span class="profile-key">Age</span><span class="profile-val">${age!==null?age+' yrs':'—'}</span></div>
+        <div class="profile-cell"><span class="profile-key">Location</span><span class="profile-val">${c.city}, ${c.country}</span></div>
+        <div class="profile-cell"><span class="profile-key">Stated risk appetite</span><span class="profile-val"><span class="badge ${riskBadgeClass(c.riskAppetite)}">${c.riskAppetite}</span></span></div>
+        <div class="profile-cell"><span class="profile-key">Account behaviour</span><span class="profile-val">${c.accountBehaviour}</span></div>
+        <div class="profile-cell"><span class="profile-key">Behaviour-adjusted risk</span><span class="profile-val"><span class="badge ${riskBadgeClass(baseRisk)}">${baseRisk}</span></span></div>
       </div>
     </div>
 
-    <!-- RIGHT: results -->
-    <div>
-      <div class="card anim-fade">
-        <div class="card-title">📊 Suggested Portfolio — ${currentRisk} risk</div>
-        <div class="card-sub">How ${c.firstName}'s ${fmtMoney(rec.amount)} is spread across product categories, based on the selected risk appetite.</div>
-        <div class="flex gap-3 wrap center">
-          <div style="flex-shrink:0">${renderDonut(rec.rows)}</div>
-          <div style="flex:1;min-width:260px">
-            ${rec.rows.map(r=>`
-              <div class="alloc-item">
-                <span class="alloc-dot" style="background:${r.color}"></span>
-                <span class="alloc-name">${r.label}</span>
-                <span class="alloc-pct" style="color:${r.color}">${r.pct}%</span>
-                <span class="alloc-amt">${fmtMoney(r.amount)}</span>
-              </div>`).join('')}
-            <div class="alloc-item" style="border-top:2px solid #cbd5e1;margin-top:.3rem;padding-top:.6rem">
-              <span class="alloc-dot" style="background:transparent"></span>
-              <span class="alloc-name" style="font-weight:800">Total</span>
-              <span class="alloc-pct" style="color:#1e293b">100%</span>
-              <span class="alloc-amt" style="font-weight:800">${fmtMoney(rec.amount)}</span>
-            </div>
+    <div class="grid-work">
+      <!-- LEFT: Amount, then Adjust Risk -->
+      <div class="col-left">
+        <div class="card">
+          <div class="card-title">💶 Amount to Invest (EUR)</div>
+          <div class="card-sub">Shown in euro (€). Prefilled from the dataset — you can change it.</div>
+          <input id="amount-input" class="input-field" type="number" min="0" step="500" value="${rec.amount}">
+        </div>
+
+        <div class="card">
+          <div class="card-title">🎚️ Adjust Risk Level</div>
+          <div class="card-sub">Move the risk up or down to see how the plan changes. Your recommended starting point is <strong>${baseRisk}</strong>.</div>
+          <select id="risk-select" class="select-field">
+            ${RISK_LEVELS.map(r=>`<option value="${r}" ${r===currentRisk?'selected':''}>${r}${r===baseRisk?'  (recommended)':''}</option>`).join('')}
+          </select>
+          <div class="stat-grid mt-2">
+            <div class="stat"><div class="stat-val">${rec.blendedReturn.toFixed(2)}%</div><div class="stat-lbl">Blended annual return</div></div>
+            <div class="stat"><div class="stat-val">${fmtMoney(rec.projection[4].total)}</div><div class="stat-lbl">Projected value (5 yrs)</div></div>
+          </div>
+          <div class="flex gap-2 wrap mt-2">
+            <button id="save-btn" class="btn btn-accent">💾 Save Recommendation</button>
+            <button id="download-btn" class="btn btn-ghost">⬇️ Download JSON</button>
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title">📈 Growth Predictions</div>
-        <div class="card-sub">
-          Projected value each year and over 5 years, per category and in total. Each category grows at the
-          average expected return of its products in the dataset, compounded annually.
+      <!-- RIGHT: results -->
+      <div class="col-right">
+        <div class="card anim-fade">
+          <div class="card-title">📊 Your Suggested Portfolio — ${currentRisk} risk</div>
+          <div class="card-sub">How your ${fmtMoney(rec.amount)} is spread across product categories at this risk level.</div>
+          <div class="flex gap-3 wrap center">
+            <div style="flex-shrink:0">${renderDonut(rec.rows)}</div>
+            <div style="flex:1;min-width:260px">
+              ${rec.rows.map(r=>`
+                <div class="alloc-item">
+                  <span class="alloc-dot" style="background:${r.color}"></span>
+                  <span class="alloc-name">${r.label}</span>
+                  <span class="alloc-pct" style="color:${r.color}">${r.pct}%</span>
+                  <span class="alloc-amt">${fmtMoney(r.amount)}</span>
+                </div>`).join('')}
+              <div class="alloc-item" style="border-top:2px solid #cbd5e1;margin-top:.3rem;padding-top:.6rem">
+                <span class="alloc-dot" style="background:transparent"></span>
+                <span class="alloc-name" style="font-weight:800">Total</span>
+                <span class="alloc-pct" style="color:#1e293b">100%</span>
+                <span class="alloc-amt" style="font-weight:800">${fmtMoney(rec.amount)}</span>
+              </div>
+            </div>
+          </div>
         </div>
-        ${renderGrowthTable(rec)}
-      </div>
 
-      <div class="card">
-        <div class="card-title">💡 Understanding Your Plan</div>
-        ${renderExplanations(rec, c)}
+        <div class="card">
+          <div class="card-title">📈 Growth Prediction — Next 5 Years</div>
+          <div class="card-sub">
+            The line below shows how your investment is projected to grow, year by year, up to 5 years.
+          </div>
+          ${renderGrowthLineChart(rec)}
+          ${renderSplitExplanation(rec, c)}
+          <details class="detail-toggle">
+            <summary>See the year-by-year figures (table)</summary>
+            ${renderGrowthTable(rec)}
+          </details>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🧭 A Balanced Mix That May Suit You</div>
+          <div class="card-sub">
+            Rather than sitting at a single risk level, many customers prefer a blend that leans towards their
+            comfort zone but still spreads money across <em>every</em> risk type. Here is a suggested mix for you.
+          </div>
+          ${renderBlendedMixChart(blendedMix, c)}
+        </div>
+
+        <div class="card">
+          <div class="card-title">💡 Understanding Your Plan</div>
+          ${renderExplanations(rec, c)}
+        </div>
       </div>
     </div>
   `;
@@ -499,6 +588,133 @@ function renderDonut(rows){
     <text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="11" fill="#94a3b8" font-weight="600">Portfolio</text>
     <text x="${cx}" y="${cy+13}" text-anchor="middle" font-size="13" fill="#334155" font-weight="800">${nCats} categories</text>
   </svg>`;
+}
+
+// ── Growth LINE chart (customer-friendly) ──
+// Plots total portfolio value across years 0..5, plus the amount invested as a baseline.
+function renderGrowthLineChart(rec){
+  const W=560, H=280, PADL=64, PADR=18, PADT=16, PADB=42;
+  const iW=W-PADL-PADR, iH=H-PADT-PADB;
+
+  // Series: year 0 = starting amount, years 1..5 = projected totals.
+  const totals=[rec.amount, ...rec.projection.map(p=>p.total)];
+  const years=[0,1,2,3,4,5];
+  const maxV=Math.max(...totals)*1.08;
+  const minV=Math.min(rec.amount, ...totals)*0.96;
+
+  const sx=i=>PADL + (i/(years.length-1))*iW;
+  const sy=v=>PADT + iH - ((v-minV)/(maxV-minV))*iH;
+
+  // Gridlines + Y labels (5 bands)
+  let grid='', yLabels='';
+  for(let g=0; g<=4; g++){
+    const v=minV + (maxV-minV)*(g/4);
+    const y=sy(v);
+    grid   += `<line x1="${PADL}" y1="${y.toFixed(1)}" x2="${W-PADR}" y2="${y.toFixed(1)}" stroke="#eef2f6" stroke-width="1"/>`;
+    yLabels+= `<text x="${PADL-8}" y="${y.toFixed(1)}" text-anchor="end" dominant-baseline="middle" font-size="10" fill="#94a3b8">${fmtMoney(v)}</text>`;
+  }
+  const xLabels=years.map(yr=>`<text x="${sx(yr).toFixed(1)}" y="${H-PADB+20}" text-anchor="middle" font-size="10" fill="#64748b" font-weight="600">${yr===0?'Now':'Year '+yr}</text>`).join('');
+
+  // Baseline (money you put in) — flat dashed line at starting amount.
+  const baseY=sy(rec.amount);
+  const baseline=`<line x1="${sx(0)}" y1="${baseY.toFixed(1)}" x2="${sx(5)}" y2="${baseY.toFixed(1)}" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+
+  // Growth line + area fill under it.
+  const pts=totals.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`);
+  const areaPts=`${pts.join(' ')} ${sx(5).toFixed(1)},${(PADT+iH).toFixed(1)} ${sx(0).toFixed(1)},${(PADT+iH).toFixed(1)}`;
+  const line=`<polyline points="${pts.join(' ')}" fill="none" stroke="var(--boi-green-dark)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const dots=totals.map((v,i)=>`<circle cx="${sx(i).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="4.5" fill="#fff" stroke="var(--boi-green-dark)" stroke-width="2.5"/>`).join('');
+  // Value labels at each point.
+  const valLabels=totals.map((v,i)=>{
+    const y=sy(v)-12;
+    return `<text x="${sx(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--brand-700)">${fmtMoney(v)}</text>`;
+  }).join('');
+
+  return `
+  <div class="chart-wrap">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-height:300px" role="img" aria-label="Projected portfolio value over 5 years">
+      <defs>
+        <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="var(--boi-green)" stop-opacity="0.28"/>
+          <stop offset="100%" stop-color="var(--boi-green)" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      ${grid}
+      <polygon points="${areaPts}" fill="url(#growthFill)"/>
+      ${baseline}
+      ${line}
+      ${dots}
+      ${valLabels}
+      ${yLabels}
+      ${xLabels}
+    </svg>
+  </div>
+  <div class="chart-legend">
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--boi-green-dark)"></span> Projected value (with growth)</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:#94a3b8"></span> Amount you invested</span>
+  </div>
+  <div class="notice mt-2">
+    Starting with <strong>${fmtMoney(rec.amount)}</strong>, your money is projected to reach
+    <strong>${fmtMoney(rec.projection[4].total)}</strong> after 5 years — a gain of
+    <strong style="color:var(--boi-green-dark)">+${fmtMoney(rec.projection[4].gain)}</strong> at a blended
+    <strong>${rec.blendedReturn.toFixed(2)}%</strong> average annual return. The gap between the two lines
+    is the growth your plan is expected to earn.
+  </div>`;
+}
+
+// ── Why the money is split (growth section explanation) ──
+function renderSplitExplanation(rec, c){
+  const active=rec.rows.filter(r=>r.pct>0).sort((a,b)=>b.pct-a.pct);
+  const safe=rec.rows.filter(r=>r.isFixed).reduce((s,r)=>s+r.pct,0);
+  const growth=rec.rows.filter(r=>!r.isFixed).reduce((s,r)=>s+r.pct,0);
+  const biggest=active[0];
+  const parts=active.map(r=>`<strong>${r.pct}%</strong> in ${r.label} (about ${r.avgReturn.toFixed(1)}% a year)`).join(', ');
+
+  return `
+  <div class="explain mt-2">
+    <h4>🧩 Why your money is split this way</h4>
+    <p>
+      Your ${fmtMoney(rec.amount)} is not placed in one product — it is divided into
+      <strong>${active.length} categories</strong>: ${parts}. This split is chosen to match your
+      <strong>${rec.riskLevel}</strong> risk level. About <strong>${safe}%</strong> sits in steadier,
+      fixed-interest categories (Savings, Fixed Deposits, Policies) that grow slowly but reliably, while
+      <strong>${growth}%</strong> goes into Funds that aim for higher growth but move up and down more.
+      The largest single slice is <strong>${biggest.label}</strong> at <strong>${biggest.pct}%</strong>.
+      Splitting the money this way means no single product decides your outcome: the steady parts protect
+      your savings while the growth parts do the heavy lifting — which is exactly why the line above rises
+      more smoothly than any one product would on its own.
+    </p>
+  </div>`;
+}
+
+// ── Blended "mix of all risk types" chart ──
+function renderBlendedMixChart(mix, c){
+  const segs=mix.bands.filter(b=>b.pct>0).map(b=>
+    `<div class="mix-seg" style="width:${b.pct}%;background:${b.color}" title="${b.level}: ${b.pct}%">${b.pct>=8?b.pct+'%':''}</div>`
+  ).join('');
+  const key=mix.bands.map(b=>
+    `<span class="mix-key-item"><span class="legend-swatch dot" style="background:${b.color}"></span>${b.level} — <strong>${b.pct}%</strong> (${fmtMoney(b.amount)})</span>`
+  ).join('');
+
+  return `
+  <div class="mix-bar">${segs}</div>
+  <div class="mix-key">${key}</div>
+  <div class="stat-grid mt-2">
+    <div class="stat"><div class="stat-val">${mix.blendedReturn.toFixed(2)}%</div><div class="stat-lbl">Blended annual return</div></div>
+    <div class="stat"><div class="stat-val">${fmtMoney(mix.value5)}</div><div class="stat-lbl">Projected value (5 yrs)</div></div>
+    <div class="stat"><div class="stat-val">${mix.bands.filter(b=>b.pct>0).length}</div><div class="stat-lbl">Risk types included</div></div>
+  </div>
+  <div class="explain mt-2">
+    <h4>🧭 Why consider this balanced mix?</h4>
+    <p>
+      This option keeps most of your money near your comfort level (<strong>${mix.center}</strong>) but also
+      places smaller amounts in every other risk type. Lower-risk bands add stability, while a little exposure
+      to higher-risk bands gives your plan extra growth potential — without betting everything on one risk level.
+      Spreading across all five risk types is one of the most effective ways to smooth out the ups and downs,
+      because when one type is having a weak year, the others can help balance it out. It is a middle path
+      between playing it completely safe and taking on a single high risk.
+    </p>
+  </div>`;
 }
 
 // ── Growth table ──
