@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bank of Ireland · Online Banking</title>
+<link rel="icon" href="public/favicon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#f1f5f9;color:#0f172a;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;border:none;background:none;font-family:inherit}
+input,select{font-family:inherit}
+:root{
+  --brand-500:#1b3a6b;--brand-600:#16326a;--brand-700:#0f2450;
+  --boi-green:#6cc24a;--boi-green-dark:#4e9e2f;--boi-navy:#0f1e46;
+}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.anim-fade{animation:fadeIn .4s ease forwards}
+.anim-slide{animation:slideUp .4s ease forwards}
+
+.app-header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,var(--boi-navy),var(--brand-600));color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);border-bottom:3px solid var(--boi-green)}
+.app-header-inner{max-width:1000px;margin:0 auto;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.logo-mark{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:40px;padding:0 .55rem;border-radius:8px;background:#fff;color:var(--boi-navy);font-weight:900;font-size:1.15rem;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.container{max-width:1000px;margin:0 auto;padding:1.5rem}
+
+.card{background:#fff;border-radius:1rem;border:1px solid #e2e8f0;padding:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.card+.card{margin-top:1.25rem}
+.card-title{font-size:1.05rem;font-weight:800;color:#1e293b;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem}
+.card-sub{font-size:.85rem;color:#64748b;margin-bottom:1.25rem;line-height:1.5}
+
+.field-label{display:block;font-size:.78rem;font-weight:700;color:#475569;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.03em}
+.input-field,.select-field{width:100%;border:1.5px solid #cbd5e1;border-radius:.6rem;padding:.75rem .9rem;font-size:.95rem;color:#0f172a;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
+.select-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2.4rem;cursor:pointer}
+.input-field:focus,.select-field:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(27,58,107,.18)}
+.field+.field{margin-top:1rem}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;padding:.8rem 1.4rem;border-radius:.7rem;font-size:.95rem;transition:all .18s;width:100%}
+.btn-primary{background:linear-gradient(135deg,var(--brand-600),var(--brand-500));color:#fff;box-shadow:0 3px 10px rgba(15,30,70,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(15,30,70,.45)}
+.btn-accent{background:linear-gradient(135deg,var(--boi-green),var(--boi-green-dark));color:#fff;box-shadow:0 3px 10px rgba(108,194,74,.35)}
+.btn-accent:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(108,194,74,.45)}
+.btn-ghost{background:#fff;border:1.5px solid #cbd5e1;color:#475569}
+.btn-ghost:hover{border-color:var(--boi-green);color:var(--boi-green-dark)}
+
+.login-wrap{max-width:420px;margin:3rem auto}
+.login-hero{text-align:center;margin-bottom:1.5rem}
+.login-hero .mark{width:64px;height:64px;border-radius:14px;background:#fff;border:3px solid var(--boi-navy);color:var(--boi-navy);display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:1.5rem;box-shadow:0 4px 14px rgba(0,0,0,.12)}
+.login-hero h1{font-size:1.4rem;font-weight:900;margin-top:.75rem}
+.login-hero p{color:#64748b;font-size:.9rem;margin-top:.25rem}
+.err{background:#fee2e2;border:1px solid #fecaca;color:#b91c1c;border-radius:.6rem;padding:.6rem .9rem;font-size:.82rem;margin-top:1rem;font-weight:600}
+.hint{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:.6rem;padding:.6rem .9rem;font-size:.78rem;margin-top:1rem;line-height:1.5}
+
+/* Dashboard */
+.acct-hero{background:linear-gradient(135deg,var(--boi-navy),var(--brand-600));color:#fff;border-radius:1.1rem;padding:1.5rem;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem}
+.acct-hero .who{font-size:1.25rem;font-weight:900}
+.acct-hero .meta{font-size:.8rem;opacity:.85;margin-top:.2rem}
+.acct-num{font-size:.78rem;opacity:.8;margin-top:.75rem;letter-spacing:.04em}
+.balance-box{text-align:right}
+.balance-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;opacity:.8;font-weight:700}
+.balance-val{font-size:2rem;font-weight:900;line-height:1.1}
+.acct-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-top:1.25rem}
+.mini{background:#f8fafc;border:1px solid #e2e8f0;border-radius:.8rem;padding:1rem;text-align:center}
+.mini-val{font-size:1.15rem;font-weight:900;color:var(--brand-700)}
+.mini-lbl{font-size:.72rem;color:#64748b;font-weight:700;margin-top:.2rem}
+
+.tbl{width:100%;border-collapse:collapse;font-size:.86rem}
+.tbl th{text-align:left;padding:.6rem .5rem;border-bottom:2px solid #e2e8f0;color:#475569;font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.03em}
+.tbl td{padding:.65rem .5rem;border-bottom:1px solid #f1f5f9;color:#334155}
+.tbl tr:hover td{background:#f8fafc}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--boi-green-dark);font-weight:700}
+.neg{color:#b91c1c;font-weight:700}
+.tag{display:inline-block;font-size:.68rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;background:#eef2ff;color:var(--brand-600)}
+
+.promo{background:linear-gradient(135deg,#eef3f8,#e8f5e0);border:1px solid #c7d2fe;border-left:4px solid var(--boi-green);border-radius:.8rem;padding:1.25rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.promo h3{font-size:1.05rem;font-weight:800;color:var(--brand-700)}
+.promo p{font-size:.85rem;color:#475569;margin-top:.25rem;max-width:520px;line-height:1.5}
+.promo .btn{width:auto}
+.topbar-actions{display:flex;gap:.75rem;align-items:center}
+.link-btn{color:#fff;font-weight:600;font-size:.85rem;opacity:.9}
+.link-btn:hover{opacity:1;text-decoration:underline}
+.disclaimer{font-size:.72rem;color:#94a3b8;text-align:center;padding:2rem 1rem;line-height:1.6}
+.flex{display:flex}.between{justify-content:space-between}.center{align-items:center}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.wrap{flex-wrap:wrap}
+.mt-2{margin-top:1rem}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="flex center gap-3">
+      <span class="logo-mark">BOI</span>
+      <div>
+        <div style="font-weight:900;font-size:1.15rem;line-height:1.1">Bank of Ireland</div>
+        <div style="font-size:.72rem;opacity:.85">Online Banking</div>
+      </div>
+    </div>
+    <div id="topbar-actions" class="topbar-actions"></div>
+  </div>
+</header>
+
+<div class="container">
+  <div id="page"></div>
+</div>
+
+<div class="disclaimer">
+  ⚠️ This is a demonstration banking interface using dummy data only. Account numbers, balances and
+  transactions are illustrative and generated for demo purposes. Not a real banking service.
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  BANK OF IRELAND — demo Online Banking front-end
+//  Reuses the same customer dataset as Investment Buddy and can deep-link
+//  into it, passing the signed-in customer via ?customer=<id>.
+// ═══════════════════════════════════════════════════════════════════
+
+// Embedded copy of data/customers.csv (fallback for file:// where fetch is blocked).
+const EMBEDDED_CUSTOMERS_CSV = `customerID,firstName,lastName,dateOfBirth,addressLine1,addressLine2,city,country,riskAppetite,accountBehaviour,investableAmount
+10001,Aoife,Byrne,1998-04-12,14 Oak Lane,,Galway,Ireland,High,Frequent Trader,15000
+10002,Liam,Murphy,1985-09-30,3 Rowan Court,Apt 5,Dublin,Ireland,Medium-High,Balanced,40000
+10003,Saoirse,Kelly,1992-01-18,27 Maple Drive,,Cork,Ireland,Medium,Regular Saver,25000
+10004,Conor,O'Brien,1970-11-05,88 Birch Road,,Limerick,Ireland,Low-Medium,Cautious Saver,60000
+10005,Niamh,Walsh,1958-06-22,5 Elm Terrace,,Waterford,Ireland,Low,Cautious Saver,120000
+10006,Sean,Doyle,2000-03-08,19 Cedar Way,Flat 2,Dublin,Ireland,Medium-High,Frequent Trader,8000
+10007,Emma,Ryan,1978-12-14,42 Willow Grove,,Galway,Ireland,Medium,Balanced,50000
+10008,Cian,McCarthy,1965-07-27,7 Hazel Close,,Kilkenny,Ireland,Low-Medium,Regular Saver,75000
+10009,Grace,Fitzgerald,1990-10-03,31 Chestnut Avenue,,Cork,Ireland,High,Balanced,20000
+10010,Darragh,Nolan,1983-02-19,63 Sycamore Street,Apt 11,Dublin,Ireland,Medium,Cautious Saver,35000`;
+
+// Demo credential: all customers use the same demo PIN (shown on the login screen).
+const DEMO_PIN = '1234';
+
+function parseCSV(text){
+  const rows=[]; let i=0,field='',row=[],inQ=false;
+  text=text.replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+  while(i<text.length){
+    const c=text[i];
+    if(inQ){ if(c==='"'){ if(text[i+1]==='"'){field+='"';i++} else inQ=false } else field+=c; }
+    else { if(c==='"') inQ=true; else if(c===','){row.push(field);field=''} else if(c==='\n'){row.push(field);rows.push(row);row=[];field=''} else field+=c; }
+    i++;
+  }
+  if(field.length||row.length){row.push(field);rows.push(row)}
+  const header=rows.shift().map(h=>h.trim());
+  return rows.filter(r=>r.length>1||r[0]!=='').map(r=>{const o={};header.forEach((h,idx)=>o[h]=(r[idx]!==undefined?r[idx].trim():''));return o;});
+}
+
+let CUSTOMERS=[];
+let currentUser=null;
+
+async function loadData(){
+  let csv=null;
+  try{
+    const res=await fetch('data/customers.csv',{cache:'no-store'});
+    if(res.ok){ const t=await res.text(); if(t && t.trim().length>10) csv=t; }
+  }catch(e){}
+  CUSTOMERS = parseCSV(csv || EMBEDDED_CUSTOMERS_CSV);
+}
+
+// ── Deterministic helpers (stable per customer) ──
+function seededRandom(seed){ // mulberry32
+  let a=seed>>>0;
+  return function(){ a|=0;a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; };
+}
+function seedFromId(id){ let s=0; String(id).split('').forEach(ch=>s=s*31+ch.charCodeAt(0)); return s; }
+
+function fmtMoney(n){ return '€' + (Math.round(n*100)/100).toLocaleString('en-IE',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtDate(d){ return d.toLocaleDateString('en-IE',{day:'2-digit',month:'short',year:'numeric'}); }
+
+function accountNumber(id){
+  const seed=seedFromId(id); const rnd=seededRandom(seed);
+  const sort='90-' + String(10+Math.floor(rnd()*89)).padStart(2,'0') + '-' + String(10+Math.floor(rnd()*89)).padStart(2,'0');
+  const acct=String(Math.floor(10000000 + rnd()*89999999));
+  return {sort, acct, iban:'IE'+String(10+Math.floor(rnd()*89))+' BOFI '+sort.replace(/-/g,'')+' '+acct.slice(0,4)+' '+acct.slice(4)};
+}
+
+// Build a stable list of recent transactions for a customer.
+const TX_TEMPLATES = [
+  {desc:'Salary — Monthly Pay', tag:'Income', type:'in',  min:1800, max:4200},
+  {desc:'Tesco Ireland',        tag:'Groceries', type:'out', min:20,  max:120},
+  {desc:'Electric Ireland',     tag:'Utilities', type:'out', min:60,  max:180},
+  {desc:'Dunnes Stores',        tag:'Groceries', type:'out', min:15,  max:90},
+  {desc:'Aer Lingus',           tag:'Travel', type:'out', min:80,  max:340},
+  {desc:'Spotify',              tag:'Subscriptions', type:'out', min:9,  max:11},
+  {desc:'Irish Rail',           tag:'Transport', type:'out', min:5,  max:45},
+  {desc:'Restaurant — Dinner',  tag:'Dining', type:'out', min:25,  max:110},
+  {desc:'ATM Withdrawal',       tag:'Cash', type:'out', min:20,  max:200},
+  {desc:'Interest Received',    tag:'Interest', type:'in',  min:2,  max:30},
+  {desc:'Amazon',               tag:'Shopping', type:'out', min:12,  max:160},
+  {desc:'Rent / Mortgage',      tag:'Housing', type:'out', min:700, max:1600},
+];
+
+function buildAccount(customer){
+  const seed=seedFromId(customer.customerID);
+  const rnd=seededRandom(seed);
+  const acct=accountNumber(customer.customerID);
+
+  // Current-account balance loosely related to profile (not the investable amount).
+  const baseBalance = 1500 + rnd()*8000;
+
+  const txs=[];
+  let running=baseBalance;
+  const now=new Date();
+  const count=12;
+  for(let i=0;i<count;i++){
+    const t=TX_TEMPLATES[Math.floor(rnd()*TX_TEMPLATES.length)];
+    const amt=Math.round((t.min + rnd()*(t.max-t.min))*100)/100;
+    const signed = t.type==='in' ? amt : -amt;
+    const date=new Date(now); date.setDate(now.getDate() - i*2 - Math.floor(rnd()*2));
+    txs.push({date, desc:t.desc, tag:t.tag, amount:signed});
+  }
+  // Newest first; compute running balance backwards from current balance.
+  txs.sort((a,b)=>b.date-a.date);
+  let bal=baseBalance;
+  txs.forEach(tx=>{ tx.balanceAfter=bal; bal-=tx.amount; });
+
+  const savings = Math.round((3000 + rnd()*20000));
+  return {
+    holder:`${customer.firstName} ${customer.lastName}`,
+    ...acct,
+    currentBalance:baseBalance,
+    savingsBalance:savings,
+    available:baseBalance - 150, // notional overdraft buffer
+    txs
+  };
+}
+
+// ═══════════════════════════ RENDER ═══════════════════════════
+function renderTopbar(){
+  const el=document.getElementById('topbar-actions');
+  if(currentUser){
+    el.innerHTML = `<span class="link-btn">${currentUser.firstName} ${currentUser.lastName}</span>
+      <button class="link-btn" id="logout-btn">Log out</button>`;
+    document.getElementById('logout-btn').onclick=()=>{ currentUser=null; render(); };
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+function render(){
+  renderTopbar();
+  document.getElementById('page').innerHTML = currentUser ? dashboardHTML() : loginHTML();
+  if(currentUser) wireDashboard(); else wireLogin();
+}
+
+// ── Login ──
+function loginHTML(){
+  return `
+  <div class="login-wrap anim-slide">
+    <div class="login-hero">
+      <span class="mark">BOI</span>
+      <h1>Welcome back</h1>
+      <p>Sign in to your Bank of Ireland account</p>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label class="field-label" for="login-id">Customer</label>
+        <select id="login-id" class="select-field">
+          ${CUSTOMERS.map(c=>`<option value="${c.customerID}">${c.firstName} ${c.lastName} — #${c.customerID}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label" for="login-pin">PIN</label>
+        <input id="login-pin" class="input-field" type="password" inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="off">
+      </div>
+      <div class="field mt-2">
+        <button id="login-btn" class="btn btn-primary">🔒 Log in securely</button>
+      </div>
+      <div id="login-err"></div>
+      <div class="hint">Demo login — select any customer and use PIN <strong>${DEMO_PIN}</strong>. No real credentials are used or stored.</div>
+    </div>
+  </div>`;
+}
+function wireLogin(){
+  const doLogin=()=>{
+    const id=document.getElementById('login-id').value;
+    const pin=document.getElementById('login-pin').value;
+    const errEl=document.getElementById('login-err');
+    if(pin!==DEMO_PIN){ errEl.innerHTML=`<div class="err">Incorrect PIN. For this demo, use ${DEMO_PIN}.</div>`; return; }
+    currentUser=CUSTOMERS.find(c=>c.customerID===id);
+    render();
+  };
+  document.getElementById('login-btn').onclick=doLogin;
+  document.getElementById('login-pin').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+}
+
+// ── Dashboard ──
+function dashboardHTML(){
+  const c=currentUser;
+  const a=buildAccount(c);
+  const buddyLink = `index.html?customer=${encodeURIComponent(c.customerID)}`;
+
+  return `
+  <div class="acct-hero anim-fade">
+    <div>
+      <div class="who">${a.holder}</div>
+      <div class="meta">${c.city}, ${c.country} · Customer #${c.customerID}</div>
+      <div class="acct-num">Current Account · Sort ${a.sort} · Acct ${a.acct}</div>
+      <div class="acct-num">${a.iban}</div>
+    </div>
+    <div class="balance-box">
+      <div class="balance-lbl">Current balance</div>
+      <div class="balance-val">${fmtMoney(a.currentBalance)}</div>
+      <div class="balance-lbl" style="margin-top:.5rem">Available</div>
+      <div style="font-weight:800">${fmtMoney(a.available)}</div>
+    </div>
+  </div>
+
+  <div class="acct-cards">
+    <div class="mini"><div class="mini-val">${fmtMoney(a.currentBalance)}</div><div class="mini-lbl">Current Account</div></div>
+    <div class="mini"><div class="mini-val">${fmtMoney(a.savingsBalance)}</div><div class="mini-lbl">Savings Account</div></div>
+    <div class="mini"><div class="mini-val">${fmtMoney(parseFloat(c.investableAmount||0))}</div><div class="mini-lbl">Available to Invest</div></div>
+    <div class="mini"><div class="mini-val">${a.txs.length}</div><div class="mini-lbl">Recent Transactions</div></div>
+  </div>
+
+  <div class="promo mt-2 anim-fade">
+    <div>
+      <h3>💰 Grow your money with Investment Buddy</h3>
+      <p>Based on your profile, see a personalised investment plan across savings, deposits, policies and funds —
+         with growth predictions over 5 years. Your details are carried across automatically, so there's nothing to re-enter.</p>
+    </div>
+    <a class="btn btn-accent" href="${buddyLink}">Launch Investment Buddy →</a>
+  </div>
+
+  <div class="card mt-2">
+    <div class="card-title">📄 Recent Transactions</div>
+    <div class="card-sub">Current Account · Sort ${a.sort} · ${a.acct}</div>
+    <div style="overflow-x:auto">
+      <table class="tbl">
+        <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="num">Amount</th><th class="num">Balance</th></tr></thead>
+        <tbody>
+          ${a.txs.map(tx=>`
+            <tr>
+              <td>${fmtDate(tx.date)}</td>
+              <td>${tx.desc}</td>
+              <td><span class="tag">${tx.tag}</span></td>
+              <td class="num ${tx.amount>=0?'pos':'neg'}">${tx.amount>=0?'+':'−'}${fmtMoney(Math.abs(tx.amount))}</td>
+              <td class="num">${fmtMoney(tx.balanceAfter)}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+function wireDashboard(){ /* links handled via href */ }
+
+// ═══════════════════════════ BOOT ═══════════════════════════
+(async function(){
+  await loadData();
+  // Optional deep link back: ?customer=<id> auto-signs-in for demo convenience.
+  const params=new URLSearchParams(location.search);
+  const pre=params.get('customer');
+  const match=pre && CUSTOMERS.find(c=>c.customerID===pre);
+  if(match) currentUser=match;
+  render();
+})();
+</script>
+</body>
+</html>

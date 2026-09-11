@@ -299,8 +299,14 @@ const BUCKET_COLOR = {
   'Funds':'#0f1e46'             // BOI dark navy
 };
 // Colours for the 5 risk bands (safe green → deeper navy for higher risk).
+// Used by the MAIN "Your Suggested Portfolio" pie.
 const RISK_BAND_COLOR = {
   'Low':'#6cc24a','Low-Medium':'#4e9e2f','Medium':'#3a5e8c','Medium-High':'#1b3a6b','High':'#0f1e46'
+};
+// A deliberately DIFFERENT palette (warm amber → teal) for the "Balanced Mix"
+// pie, so customers can tell the two charts apart at a glance.
+const MIX_BAND_COLOR = {
+  'Low':'#f6c445','Low-Medium':'#f2994a','Medium':'#eb5757','Medium-High':'#9b51e0','High':'#2d9cdb'
 };
 function bucketOf(product){
   return BUCKET_OF_TYPE[product.productType] || 'Funds';
@@ -487,7 +493,7 @@ function buildBlendedMix(customer, products, centerLevel){
 
   const bands = RISK_LEVELS.map((lvl,i)=>({
     level:lvl, pct:pcts[i], amount:amount*pcts[i]/100,
-    avgReturn:bandReturn[i], color:RISK_BAND_COLOR[lvl],
+    avgReturn:bandReturn[i], color:MIX_BAND_COLOR[lvl],
     productCount:products.filter(p=>p.productRisk===lvl).length,
     recNames:recommendedProducts(products,lvl).map(p=>p.productName),
     recommended: pcts[i] >= 5
@@ -1051,7 +1057,16 @@ function showToast(msg){
 (async function(){
   await loadData();
   renderCustomerSelect();
-  selectCustomer(CUSTOMERS[0].customerID);
+  // Deep link support: ?customer=<id> preselects the customer (e.g. from the banking app).
+  const params = new URLSearchParams(location.search);
+  const linkedId = params.get('customer');
+  const match = linkedId && CUSTOMERS.find(c=>c.customerID===linkedId);
+  selectCustomer(match ? match.customerID : CUSTOMERS[0].customerID);
+  if(match){
+    const banner=document.getElementById('load-status');
+    banner.classList.remove('hidden');
+    banner.innerHTML = `🔗 Signed in from your banking app — showing your plan, ${match.firstName} ${match.lastName} (Customer #${match.customerID}). <a href="banking.html" style="color:var(--brand-600);font-weight:700">Back to banking</a>`;
+  }
 })();
 </script>
 </body>
