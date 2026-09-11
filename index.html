@@ -170,7 +170,7 @@ details.detail-toggle[open]>summary::before{content:'▾ '}
 <header class="app-header">
   <div class="app-header-inner">
     <div class="flex center gap-3">
-      <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9px;background:var(--boi-green);color:var(--boi-navy);font-weight:900;font-size:1.15rem;flex-shrink:0">BOI</span>
+      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:40px;padding:0 .55rem;border-radius:8px;background:#fff;color:var(--boi-navy);font-weight:900;font-size:1.15rem;letter-spacing:.02em;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,.2)">BOI</span>
       <div>
         <div style="font-weight:900;font-size:1.15rem;line-height:1.1">Investment Buddy</div>
         <div style="font-size:.72rem;opacity:.85">Bank of Ireland · Per-customer portfolio advisor</div>
@@ -317,6 +317,23 @@ function riskBandTypes(products){
   return map;
 }
 
+// How many products we highlight as "recommended" per risk band (keeps legend clean).
+const RECOMMENDED_PER_BAND = 3;
+
+// Pick the recommended products for a risk band: within the band, prefer the
+// steadiest first (lowest riskScore), then the better return, and cap the count.
+// Dataset-only: no external data or judgement is applied.
+function recommendedProducts(products, band){
+  return products
+    .filter(p=>p.productRisk===band)
+    .sort((a,b)=>{
+      const rs=parseFloat(a.riskScore)-parseFloat(b.riskScore);
+      if(rs!==0) return rs;
+      return parseFloat(b.expectedReturnPercentage)-parseFloat(a.expectedReturnPercentage);
+    })
+    .slice(0, RECOMMENDED_PER_BAND);
+}
+
 // Recommended spread across the 5 RISK TYPES for each chosen risk level (%).
 // Safer levels concentrate in Low / Low-Medium; higher levels shift toward
 // Medium-High / High. Each row sums to 100.
@@ -417,10 +434,13 @@ function buildRecommendation(customer, products, riskLevel){
     const pct = riskAlloc[band];
     const list = products.filter(p=>p.productRisk===band);
     const avgReturn = list.length ? list.reduce((s,p)=>s+parseFloat(p.expectedReturnPercentage||0),0)/list.length : 0;
+    const recs = recommendedProducts(products, band);
     return {
       band, label:band, color:RISK_BAND_COLOR[band],
       pct, amount:amount*pct/100, avgReturn,
-      types:typesByBand[band], names:list.map(p=>p.productName), productCount:list.length
+      types:typesByBand[band], productCount:list.length,
+      recNames: recs.map(p=>p.productName),
+      recommended: pct >= 5   // bands with a meaningful allocation are "recommended"
     };
   });
 
@@ -469,7 +489,8 @@ function buildBlendedMix(customer, products, centerLevel){
     level:lvl, pct:pcts[i], amount:amount*pcts[i]/100,
     avgReturn:bandReturn[i], color:RISK_BAND_COLOR[lvl],
     productCount:products.filter(p=>p.productRisk===lvl).length,
-    names:products.filter(p=>p.productRisk===lvl).map(p=>p.productName)
+    recNames:recommendedProducts(products,lvl).map(p=>p.productName),
+    recommended: pcts[i] >= 5
   }));
 
   const blendedReturn = bands.reduce((s,b)=>s + (b.pct/100)*b.avgReturn, 0);
@@ -610,13 +631,13 @@ function renderApp(){
         <div class="card anim-fade">
           <div class="card-title">📊 Your Suggested Portfolio — ${currentRisk} risk</div>
           <div class="card-sub">
-            How your ${fmtMoney(rec.amount)} is spread across the <strong>risk types</strong> in our product range.
-            Each slice is a risk category, made up of the products listed beside it.
+            How your ${fmtMoney(rec.amount)} is spread across the <strong>recommended risk types</strong>.
+            Each slice is a risk category — the products we suggest for you are highlighted beside it.
           </div>
           <div class="flex gap-3 wrap center">
             <div style="flex-shrink:0">${renderRiskPie(rec.riskRows, 'Portfolio')}</div>
             <div style="flex:1;min-width:280px">
-              ${rec.riskRows.filter(r=>r.pct>0).map(r=>`
+              ${rec.riskRows.filter(r=>r.recommended).map(r=>`
                 <div class="alloc-item alloc-item-rich">
                   <span class="alloc-dot" style="background:${r.color}"></span>
                   <div class="alloc-body">
@@ -625,8 +646,8 @@ function renderApp(){
                       <span class="alloc-pct" style="color:${r.color}">${r.pct}%</span>
                       <span class="alloc-amt">${fmtMoney(r.amount)}</span>
                     </div>
-                    <div class="alloc-types">${r.productCount} products · ${r.avgReturn.toFixed(1)}% avg/yr</div>
-                    <ul class="alloc-names">${r.names.map(n=>`<li>${n}</li>`).join('')}</ul>
+                    <div class="alloc-types">Recommended products · ${r.avgReturn.toFixed(1)}% avg/yr</div>
+                    <ul class="alloc-names">${r.recNames.map(n=>`<li>${n}</li>`).join('')}</ul>
                   </div>
                 </div>`).join('')}
               <div class="alloc-item" style="border-top:2px solid #cbd5e1;margin-top:.3rem;padding-top:.6rem">
@@ -704,39 +725,45 @@ function renderDonut(rows){
 function renderRiskPie(rows, caption){
   const cx=90, cy=90, R=82;
   const active=rows.filter(s=>s.pct>0);
+  const anyFlagged=active.some(s=>s.recommended!==undefined);
   let angle=-90; // start at top
   const wedges=active.map(s=>{
     const sweep=s.pct/100*360;
-    const seg=pieWedge(cx,cy,R,angle,angle+sweep,s.color);
+    // Recommended slices show in full colour; small non-recommended ones are faded
+    // so the recommended risk types stand out clearly.
+    const isRec = !anyFlagged || s.recommended;
+    const seg=pieWedge(cx,cy,R,angle,angle+sweep,s.color, isRec?1:0.28);
     angle+=sweep;
     return seg;
   });
+  const nRec=active.filter(s=>!anyFlagged||s.recommended).length;
   return `<svg viewBox="0 0 180 180" width="180" height="180" role="img" aria-label="${caption} by risk type">
     <circle cx="${cx}" cy="${cy}" r="${R}" fill="#f1f5f9"/>
     ${wedges.join('')}
     <circle cx="${cx}" cy="${cy}" r="34" fill="#fff"/>
-    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="600">${caption}</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" font-size="12" fill="#334155" font-weight="800">by risk type</text>
+    <text x="${cx}" y="${cy-3}" text-anchor="middle" font-size="11" fill="#334155" font-weight="800">${nRec} risk</text>
+    <text x="${cx}" y="${cy+11}" text-anchor="middle" font-size="10" fill="#94a3b8" font-weight="600">types</text>
   </svg>`;
 }
 
 // Build a single SVG path for a pie wedge between two angles (degrees).
-function pieWedge(cx,cy,r,a0,a1,fill){
+function pieWedge(cx,cy,r,a0,a1,fill,opacity){
+  const op = opacity===undefined ? 1 : opacity;
   const rad=d=>d*Math.PI/180;
   const x0=cx+r*Math.cos(rad(a0)), y0=cy+r*Math.sin(rad(a0));
   const x1=cx+r*Math.cos(rad(a1)), y1=cy+r*Math.sin(rad(a1));
   const large=(a1-a0)>180?1:0;
   // full circle guard (single 100% slice)
   if(Math.abs(a1-a0)>=359.999){
-    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}"/>`;
+    return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${fill}" opacity="${op}"/>`;
   }
-  return `<path d="M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${fill}"/>`;
+  return `<path d="M${cx},${cy} L${x0.toFixed(2)},${y0.toFixed(2)} A${r},${r} 0 ${large} 1 ${x1.toFixed(2)},${y1.toFixed(2)} Z" fill="${fill}" opacity="${op}"/>`;
 }
 
 // ── Balanced Mix — rendered as a PIE across all five risk bands ──
 function renderBlendedMixPie(mix, c){
-  const rows=mix.bands.map(b=>({pct:b.pct,color:b.color}));
-  const legend=mix.bands.map(b=>
+  const rows=mix.bands.map(b=>({pct:b.pct,color:b.color,recommended:b.recommended}));
+  const legend=mix.bands.filter(b=>b.recommended).map(b=>
     `<div class="alloc-item alloc-item-rich">
        <span class="alloc-dot" style="background:${b.color}"></span>
        <div class="alloc-body">
@@ -745,8 +772,8 @@ function renderBlendedMixPie(mix, c){
            <span class="alloc-pct" style="color:${b.color}">${b.pct}%</span>
            <span class="alloc-amt">${fmtMoney(b.amount)}</span>
          </div>
-         <div class="alloc-types">${b.productCount} products · avg ${b.avgReturn.toFixed(1)}% a year</div>
-         <ul class="alloc-names">${b.names.map(n=>`<li>${n}</li>`).join('')}</ul>
+         <div class="alloc-types">Recommended products · avg ${b.avgReturn.toFixed(1)}% a year</div>
+         <ul class="alloc-names">${b.recNames.map(n=>`<li>${n}</li>`).join('')}</ul>
        </div>
      </div>`
   ).join('');
