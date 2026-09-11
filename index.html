@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>💰 Investment Buddy — Per-Customer Portfolio Advisor</title>
+<title>Bank of Ireland · Investment Buddy — Per-Customer Portfolio Advisor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <style>
@@ -13,9 +13,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:#f1f5f9;color:#0f172a;-
 button{cursor:pointer;border:none;background:none;font-family:inherit}
 input,select{font-family:inherit}
 :root{
-  --brand-50:#eef2ff;--brand-100:#e0e7ff;--brand-200:#c7d2fe;--brand-300:#a5b4fc;
-  --brand-400:#818cf8;--brand-500:#6366f1;--brand-600:#4f46e5;--brand-700:#4338ca;
-  --brand-800:#3730a3;--brand-900:#312e81;
+  /* Bank of Ireland palette — dark navy primary + spring-green accent */
+  --brand-50:#eef3f8;--brand-100:#d6e2ef;--brand-200:#adc4dc;--brand-300:#6f92b8;
+  --brand-400:#3a5e8c;--brand-500:#1b3a6b;--brand-600:#16326a;--brand-700:#0f2450;
+  --brand-800:#0b1c3f;--brand-900:#0a1631;
+  /* BOI spring green accent */
+  --boi-green:#6cc24a;--boi-green-dark:#4e9e2f;--boi-green-light:#e8f5e0;
+  --boi-navy:#0f1e46;
 }
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
@@ -26,7 +30,7 @@ input,select{font-family:inherit}
 ::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:4px}
 
 /* Layout */
-.app-header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,#312e81,#4f46e5);color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.app-header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,var(--boi-navy),var(--brand-600));color:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);border-bottom:3px solid var(--boi-green)}
 .app-header-inner{max-width:1100px;margin:0 auto;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
 .container{max-width:1100px;margin:0 auto;padding:1.5rem}
 .grid-main{display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start}
@@ -42,7 +46,7 @@ input,select{font-family:inherit}
 .field-label{display:block;font-size:.8rem;font-weight:700;color:#475569;margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.03em}
 .select-field,.input-field{width:100%;border:1.5px solid #cbd5e1;border-radius:.6rem;padding:.7rem .9rem;font-size:.95rem;color:#0f172a;background:#fff;outline:none;transition:border-color .15s,box-shadow .15s}
 .select-field{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2364748b' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2.4rem;cursor:pointer}
-.select-field:focus,.input-field:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.select-field:focus,.input-field:focus{border-color:var(--brand-500);box-shadow:0 0 0 3px rgba(27,58,107,.18)}
 
 /* Profile panel */
 .profile-row{display:flex;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid #f1f5f9;font-size:.9rem}
@@ -75,14 +79,16 @@ input,select{font-family:inherit}
 
 /* Buttons */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;padding:.7rem 1.3rem;border-radius:.7rem;font-size:.9rem;transition:all .18s}
-.btn-primary{background:linear-gradient(135deg,var(--brand-600),#4f46e5);color:#fff;box-shadow:0 3px 10px rgba(79,70,229,.35)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(79,70,229,.45)}
+.btn-primary{background:linear-gradient(135deg,var(--brand-600),var(--brand-500));color:#fff;box-shadow:0 3px 10px rgba(15,30,70,.35)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(15,30,70,.45)}
+.btn-accent{background:linear-gradient(135deg,var(--boi-green),var(--boi-green-dark));color:#fff;box-shadow:0 3px 10px rgba(108,194,74,.35)}
+.btn-accent:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(108,194,74,.45)}
 .btn-ghost{background:#fff;border:1.5px solid #cbd5e1;color:#475569}
-.btn-ghost:hover{border-color:var(--brand-400);color:var(--brand-600);background:var(--brand-50)}
+.btn-ghost:hover{border-color:var(--boi-green);color:var(--boi-green-dark);background:var(--boi-green-light)}
 
 /* Explain callouts */
-.explain{background:linear-gradient(135deg,#eff6ff,#eef2ff);border:1px solid #c7d2fe;border-radius:.8rem;padding:1.1rem 1.25rem}
-.explain h4{font-size:.95rem;font-weight:800;color:var(--brand-800);margin-bottom:.5rem;display:flex;align-items:center;gap:.45rem}
+.explain{background:linear-gradient(135deg,var(--brand-50),var(--boi-green-light));border:1px solid var(--brand-200);border-left:4px solid var(--boi-green);border-radius:.8rem;padding:1.1rem 1.25rem}
+.explain h4{font-size:.95rem;font-weight:800;color:var(--brand-700);margin-bottom:.5rem;display:flex;align-items:center;gap:.45rem}
 .explain p{font-size:.88rem;color:#334155;line-height:1.65}
 .explain+.explain{margin-top:1rem}
 
@@ -94,7 +100,7 @@ input,select{font-family:inherit}
 
 /* Notice */
 .notice{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:.7rem;padding:.7rem 1rem;font-size:.8rem;line-height:1.5}
-.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#15803d;color:#fff;padding:.8rem 1.5rem;border-radius:.7rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:100;animation:fadeIn .3s}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:var(--boi-green-dark);color:#fff;padding:.8rem 1.5rem;border-radius:.7rem;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);z-index:100;animation:fadeIn .3s}
 
 /* Helpers */
 .muted{color:#64748b}
@@ -109,15 +115,15 @@ input,select{font-family:inherit}
 
 <header class="app-header">
   <div class="app-header-inner">
-    <div class="flex center gap-2">
-      <span style="font-size:1.6rem">💰</span>
+    <div class="flex center gap-3">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:9px;background:var(--boi-green);color:var(--boi-navy);font-weight:900;font-size:1.15rem;flex-shrink:0">BOI</span>
       <div>
         <div style="font-weight:900;font-size:1.15rem;line-height:1.1">Investment Buddy</div>
-        <div style="font-size:.72rem;opacity:.8">Per-customer portfolio advisor</div>
+        <div style="font-size:.72rem;opacity:.85">Bank of Ireland · Per-customer portfolio advisor</div>
       </div>
     </div>
     <div style="min-width:240px">
-      <label class="field-label" style="color:#c7d2fe;margin-bottom:.3rem">Select customer</label>
+      <label class="field-label" style="color:var(--brand-200);margin-bottom:.3rem">Select customer</label>
       <select id="customer-select" class="select-field" style="min-width:240px"></select>
     </div>
   </div>
@@ -233,10 +239,10 @@ const BUCKET_LABEL = {
   'Funds':'Funds (Stocks / Bonds / Pension)'
 };
 const BUCKET_COLOR = {
-  'Savings Account':'#10b981',
-  'Fixed Deposits':'#3b82f6',
-  'Policies':'#8b5cf6',
-  'Funds':'#f59e0b'
+  'Savings Account':'#6cc24a',  // BOI spring green
+  'Fixed Deposits':'#1b3a6b',   // BOI navy
+  'Policies':'#3a5e8c',         // BOI mid-blue
+  'Funds':'#0f1e46'             // BOI dark navy
 };
 function bucketOf(product){
   return BUCKET_OF_TYPE[product.productType] || 'Funds';
@@ -402,8 +408,8 @@ function renderApp(){
       </div>
 
       <div class="card">
-        <div class="card-title">💶 Amount to Invest</div>
-        <div class="card-sub">From the dataset (editable for this session).</div>
+        <div class="card-title">💶 Amount to Invest (EUR)</div>
+        <div class="card-sub">Shown in euro (€). From the dataset — editable for this session.</div>
         <input id="amount-input" class="input-field" type="number" min="0" step="500" value="${rec.amount}">
       </div>
 
@@ -418,7 +424,7 @@ function renderApp(){
           <div class="stat"><div class="stat-val">${fmtMoney(rec.projection[4].total)}</div><div class="stat-lbl">Projected value (5 yrs)</div></div>
         </div>
         <div class="flex gap-2 wrap mt-2">
-          <button id="save-btn" class="btn btn-primary">💾 Save Recommendation</button>
+          <button id="save-btn" class="btn btn-accent">💾 Save Recommendation</button>
           <button id="download-btn" class="btn btn-ghost">⬇️ Download JSON</button>
         </div>
       </div>
