@@ -368,19 +368,30 @@ function buildRecommendation(customer, products, riskLevel){
 function buildBlendedMix(customer, products, centerLevel){
   const amount = parseFloat(customer.investableAmount||0) || 0;
   const centerIdx = RISK_LEVELS.indexOf(centerLevel);
-  const center = centerIdx<0 ? 2 : centerIdx;
+  const rawCenter = centerIdx<0 ? 2 : centerIdx;
 
-  // Bell-shaped weights around the customer's level (nearer bands get more money).
-  // weight = base^distance, then normalised to 100%.
+  // Deliberately CONSERVATIVE to moderately-conservative bias.
+  // Pull the centre of gravity down towards the "Low-Medium" band (index 1),
+  // so even higher-appetite customers get a safety-leaning blend. We blend the
+  // customer's own level with the conservative anchor (70% anchor / 30% appetite).
+  const ANCHOR = 1;                       // Low-Medium = moderately conservative
+  const center = ANCHOR*0.7 + rawCenter*0.3;   // fractional centre, leans low
+
+  // Asymmetric bell: weights fall off FASTER above the centre than below it,
+  // so lower-risk bands always carry more money than higher-risk ones.
+  const DECAY_BELOW = 0.60;   // gentle decay towards safer bands (keeps them heavy)
+  const DECAY_ABOVE = 0.38;   // steep decay towards riskier bands (keeps them light)
   const raw = RISK_LEVELS.map((lvl,i)=>{
     const dist=Math.abs(i-center);
-    return Math.pow(0.45, dist);        // 1, 0.45, 0.2, 0.09, ...
+    const decay = i<center ? DECAY_BELOW : DECAY_ABOVE;
+    return Math.pow(decay, dist);
   });
   const sum = raw.reduce((s,w)=>s+w,0);
   let pcts = raw.map(w=>Math.round(w/sum*100));
-  // fix rounding to exactly 100
+  // fix rounding to exactly 100 (adjust the largest band)
   let drift = 100 - pcts.reduce((s,p)=>s+p,0);
-  pcts[center]+=drift;
+  const maxIdx = pcts.indexOf(Math.max(...pcts));
+  pcts[maxIdx]+=drift;
 
   // Average expected return of the products in each risk band (dataset-driven).
   const bandReturn = RISK_LEVELS.map(lvl=>{
@@ -593,14 +604,24 @@ function renderDonut(rows){
 // ── Growth LINE chart (customer-friendly) ──
 // Plots total portfolio value across years 0..5, plus the amount invested as a baseline.
 function renderGrowthLineChart(rec){
-  const W=560, H=280, PADL=64, PADR=18, PADT=16, PADB=42;
+  const W=560, H=300, PADL=64, PADR=18, PADT=18, PADB=42;
   const iW=W-PADL-PADR, iH=H-PADT-PADB;
-
-  // Series: year 0 = starting amount, years 1..5 = projected totals.
-  const totals=[rec.amount, ...rec.projection.map(p=>p.total)];
   const years=[0,1,2,3,4,5];
-  const maxV=Math.max(...totals)*1.08;
-  const minV=Math.min(rec.amount, ...totals)*0.96;
+
+  // Total series: year 0 = starting amount, years 1..5 = projected totals.
+  const totals=[rec.amount, ...rec.projection.map(p=>p.total)];
+
+  // Per-category series (one line each): year 0 = starting amount in that bucket,
+  // years 1..5 = that bucket's projected balance.
+  const catSeries=rec.rows.filter(r=>r.pct>0).map(r=>({
+    label:r.label, color:r.color, bucket:r.bucket,
+    values:[r.amount, ...rec.projection.map(p=>p.perBucket[r.bucket])]
+  }));
+
+  // Y range spans every series so all lines fit.
+  const allVals=[...totals, ...catSeries.flatMap(s=>s.values)];
+  const maxV=Math.max(...allVals)*1.08;
+  const minV=Math.max(0, Math.min(...allVals)*0.9);
 
   const sx=i=>PADL + (i/(years.length-1))*iW;
   const sy=v=>PADT + iH - ((v-minV)/(maxV-minV))*iH;
@@ -617,48 +638,63 @@ function renderGrowthLineChart(rec){
 
   // Baseline (money you put in) — flat dashed line at starting amount.
   const baseY=sy(rec.amount);
-  const baseline=`<line x1="${sx(0)}" y1="${baseY.toFixed(1)}" x2="${sx(5)}" y2="${baseY.toFixed(1)}" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4"/>`;
+  const baseline=`<line x1="${sx(0)}" y1="${baseY.toFixed(1)}" x2="${sx(5)}" y2="${baseY.toFixed(1)}" stroke="#94a3b8" stroke-width="1.4" stroke-dasharray="5 4"/>`;
 
-  // Growth line + area fill under it.
+  // Thin per-category lines (drawn first, sit behind the total).
+  const catLines=catSeries.map(s=>{
+    const pts=s.values.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(' ');
+    const dots=s.values.map((v,i)=>`<circle cx="${sx(i).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="2.6" fill="${s.color}"/>`).join('');
+    return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>${dots}`;
+  }).join('');
+
+  // Total line + area fill under it (drawn on top, thickest).
   const pts=totals.map((v,i)=>`${sx(i).toFixed(1)},${sy(v).toFixed(1)}`);
   const areaPts=`${pts.join(' ')} ${sx(5).toFixed(1)},${(PADT+iH).toFixed(1)} ${sx(0).toFixed(1)},${(PADT+iH).toFixed(1)}`;
-  const line=`<polyline points="${pts.join(' ')}" fill="none" stroke="var(--boi-green-dark)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
-  const dots=totals.map((v,i)=>`<circle cx="${sx(i).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="4.5" fill="#fff" stroke="var(--boi-green-dark)" stroke-width="2.5"/>`).join('');
-  // Value labels at each point.
+  const totalLine=`<polyline points="${pts.join(' ')}" fill="none" stroke="var(--boi-green-dark)" stroke-width="3.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const totalDots=totals.map((v,i)=>`<circle cx="${sx(i).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="4.5" fill="#fff" stroke="var(--boi-green-dark)" stroke-width="2.5"/>`).join('');
+  // Value labels only on the TOTAL line (to avoid clutter).
   const valLabels=totals.map((v,i)=>{
     const y=sy(v)-12;
     return `<text x="${sx(i).toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" font-size="10" font-weight="800" fill="var(--brand-700)">${fmtMoney(v)}</text>`;
   }).join('');
 
+  // Combined legend: total + baseline + each category.
+  const catLegend=catSeries.map(s=>
+    `<span class="legend-item"><span class="legend-swatch" style="background:${s.color}"></span> ${s.label}</span>`
+  ).join('');
+
   return `
   <div class="chart-wrap">
-    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-height:300px" role="img" aria-label="Projected portfolio value over 5 years">
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-height:320px" role="img" aria-label="Projected portfolio value over 5 years, total and per category">
       <defs>
         <linearGradient id="growthFill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="var(--boi-green)" stop-opacity="0.28"/>
+          <stop offset="0%" stop-color="var(--boi-green)" stop-opacity="0.22"/>
           <stop offset="100%" stop-color="var(--boi-green)" stop-opacity="0"/>
         </linearGradient>
       </defs>
       ${grid}
       <polygon points="${areaPts}" fill="url(#growthFill)"/>
       ${baseline}
-      ${line}
-      ${dots}
+      ${catLines}
+      ${totalLine}
+      ${totalDots}
       ${valLabels}
       ${yLabels}
       ${xLabels}
     </svg>
   </div>
   <div class="chart-legend">
-    <span class="legend-item"><span class="legend-swatch" style="background:var(--boi-green-dark)"></span> Projected value (with growth)</span>
+    <span class="legend-item"><span class="legend-swatch" style="background:var(--boi-green-dark);height:5px"></span> <strong>Total portfolio</strong></span>
     <span class="legend-item"><span class="legend-swatch" style="background:#94a3b8"></span> Amount you invested</span>
+    ${catLegend}
   </div>
   <div class="notice mt-2">
-    Starting with <strong>${fmtMoney(rec.amount)}</strong>, your money is projected to reach
-    <strong>${fmtMoney(rec.projection[4].total)}</strong> after 5 years — a gain of
+    The thick line is your <strong>total portfolio</strong>; the thinner coloured lines show how each
+    category grows on its own. Starting with <strong>${fmtMoney(rec.amount)}</strong>, your money is
+    projected to reach <strong>${fmtMoney(rec.projection[4].total)}</strong> after 5 years — a gain of
     <strong style="color:var(--boi-green-dark)">+${fmtMoney(rec.projection[4].gain)}</strong> at a blended
-    <strong>${rec.blendedReturn.toFixed(2)}%</strong> average annual return. The gap between the two lines
-    is the growth your plan is expected to earn.
+    <strong>${rec.blendedReturn.toFixed(2)}%</strong> average annual return. Steadier categories rise gently,
+    while growth Funds climb more steeply — together they make up the total.
   </div>`;
 }
 
